@@ -3,7 +3,7 @@ import { createApp } from './app';
 
 describe('GET /health', () => {
   it('reports ok', async () => {
-    const res = await createApp().request('/health');
+    const res = await createApp({}).request('/health');
     expect(res.status).toBe(200);
     expect(await res.json()).toEqual({ ok: true });
   });
