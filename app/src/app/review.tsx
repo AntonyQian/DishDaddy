@@ -7,6 +7,7 @@ import { Button, Chip, T } from '@/components/ui';
 import { saveLatestScan } from '@/lib/latestScan';
 import { useIngredientList } from '@/lib/useIngredientList';
 import { ItemRow } from '@/review/ItemRow';
+import { BarcodeModal } from '@/review/BarcodeModal';
 import { IngredientInput, PhotoWithBoxes } from '@/review/components';
 import {
   add, choose, confirm, confirmAll, confirmedIngredients, name, remove, startReview, type ReviewItem,
@@ -21,6 +22,8 @@ export default function ReviewScreen() {
   const [photoIndex, setPhotoIndex] = useState(0);
   const [selectedId, setSelectedId] = useState<string>();
   const [picking, setPicking] = useState(false);
+  // Scanning a barcode either replaces this item's guess, or (null id) adds a new item.
+  const [barcodeFor, setBarcodeFor] = useState<{ itemId: string | null }>();
   const [saving, setSaving] = useState(false);
 
   const visible = items.filter((i) => i.status !== 'removed');
@@ -95,10 +98,12 @@ export default function ReviewScreen() {
             onRemove={() => setItems((is) => remove(is, item.id))}
             onChoose={(n) => setItems((is) => choose(is, item.id, n))}
             onName={(n) => setItems((is) => name(is, item.id, n))}
+            onBarcode={() => setBarcodeFor({ itemId: item.id })}
           />
         ))}
 
         <Button title="+ Add ingredient" variant="secondary" onPress={() => setPicking(true)} />
+        <Button title="Scan barcode" variant="secondary" onPress={() => setBarcodeFor({ itemId: null })} />
       </ScrollView>
 
       <View style={[styles.footer, { borderColor: colors.border }]}>
@@ -107,6 +112,13 @@ export default function ReviewScreen() {
         </T>
         <Button title="Done" onPress={finish} busy={saving} />
       </View>
+
+      <BarcodeModal
+        visible={!!barcodeFor}
+        vocabulary={vocabulary}
+        onClose={() => setBarcodeFor(undefined)}
+        onResult={(n) => setItems((is) => (barcodeFor?.itemId ? choose(is, barcodeFor.itemId, n) : add(is, n)))}
+      />
 
       <Modal visible={picking} animationType="slide" presentationStyle="pageSheet" onRequestClose={() => setPicking(false)}>
         <View style={[styles.modal, { backgroundColor: colors.background }]}>
