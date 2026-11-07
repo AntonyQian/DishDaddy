@@ -7,7 +7,7 @@ import { choicesFor, kindOf, type ReviewItem } from './reviewState';
 
 /** One row of Review: confirm or remove, answer "Is this X or Y?", or name an Unidentified Item. */
 export function ItemRow({
-  item, photo, selected, vocabulary, borderColor, onSelect, onConfirm, onRemove, onChoose, onName,
+  item, photo, selected, vocabulary, borderColor, onSelect, onConfirm, onRemove, onChoose, onName, onBarcode,
 }: {
   item: ReviewItem;
   photo?: CapturedPhoto;
@@ -19,6 +19,7 @@ export function ItemRow({
   onRemove: () => void;
   onChoose: (ingredient: string) => void;
   onName: (text: string) => void;
+  onBarcode: () => void;
 }) {
   const kind = kindOf(item);
   const isConfirmed = item.status === 'confirmed';
@@ -75,6 +76,11 @@ export function ItemRow({
           )}
           <IngredientInput vocabulary={vocabulary} placeholder="Type what it is" onSubmit={onName} />
         </>
+      )}
+      {!isConfirmed && item.detection && (
+        <View style={styles.chips}>
+          <Chip title="Scan barcode" onPress={onBarcode} />
+        </View>
       )}
     </Pressable>
   );
