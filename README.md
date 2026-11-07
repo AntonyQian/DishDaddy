@@ -4,7 +4,7 @@ Photograph your fridge, confirm what the app found, get recipes you can cook. Se
 
 | Folder | What |
 |---|---|
-| `app/` | Expo (SDK 56) app with Expo Router |
+| `app/` | Expo (SDK 58) app with Expo Router |
 | `server/` | Hono server on Node; holds the Gemini key |
 | `shared/` | TypeScript contracts used by both (`@fridge/shared`) |
 
