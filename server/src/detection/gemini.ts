@@ -70,7 +70,7 @@ export function createGeminiModel(options: {
   timeoutMs?: number;
 }): PhotoModel {
   const ai = new GoogleGenAI({ apiKey: options.apiKey });
-  const model = options.model ?? 'gemini-3.8-flash';
+  const model = options.model ?? 'gemini-3.5-flash';
 
   return async (photo, vocabulary) => {
     const response = await ai.models.generateContent({
