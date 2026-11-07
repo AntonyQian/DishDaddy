@@ -1,0 +1,15 @@
+{
+  "name": "hackcamp2026",
+  "private": true,
+  "workspaces": [
+    "app",
+    "server",
+    "shared"
+  ],
+  "scripts": {
+    "app": "npm run start --workspace app",
+    "server": "npm run dev --workspace server",
+    "test": "npm run test --workspace server --workspace shared --workspace app",
+    "typecheck": "npm run typecheck --workspaces --if-present"
+  }
+}

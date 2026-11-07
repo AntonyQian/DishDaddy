@@ -1,0 +1,15 @@
+{
+  "name": "@fridge/shared",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "echo \"shared has no tests\""
+  },
+  "devDependencies": {
+    "typescript": "~6.0.3"
+  }
+}
