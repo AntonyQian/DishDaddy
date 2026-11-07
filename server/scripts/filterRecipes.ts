@@ -15,6 +15,8 @@ export interface RawRecipe {
   category: string;
   rating: number;
   reviewCount: number;
+  /** Protein per serving in grams, or null when the dataset has none. */
+  proteinGrams: number | null;
   ingredients: { name: string; quantity: string }[];
   steps: string[];
 }
@@ -85,6 +87,8 @@ function toRawRecipe(get: (column: string) => string, o: FilterOptions): RawReci
   const minutes = parseDuration(get('TotalTime'));
   if (!(servings > 0) || minutes === null || minutes > o.maxMinutes) return null;
 
+  const proteinText = get('ProteinContent').trim();
+  const protein = proteinText === '' || proteinText === 'NA' || isNaN(Number(proteinText)) ? null : Number(proteinText);
   const imageUrl = parseRVector(get('Images')).find((u) => u);
   const names = parseRVector(get('RecipeIngredientParts'));
   const quantities = parseRVector(get('RecipeIngredientQuantities'));
@@ -103,6 +107,7 @@ function toRawRecipe(get: (column: string) => string, o: FilterOptions): RawReci
     category: get('RecipeCategory'),
     rating,
     reviewCount,
+    proteinGrams: protein,
     ingredients: names.map((n, i) => ({ name: n!, quantity: quantities[i] ?? '' })),
     steps,
   };
