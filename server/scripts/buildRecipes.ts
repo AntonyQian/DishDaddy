@@ -22,11 +22,11 @@ const log = (m: string) => console.log(`[${new Date().toISOString().slice(11, 19
 
 const steps = createGeminiSteps({
   apiKey,
-  model: process.env.GEMINI_MODEL ?? 'gemini-3.8-flash',
+  model: process.env.RECIPE_BUILD_MODEL ?? 'gemini-3.5-flash-lite',
   cacheDir: 'data/raw/cache',
   log,
 });
-const { recipes, report, unmapped } = await buildRecipes(raw, steps, { concurrency: Number(process.env.CONCURRENCY ?? 3), log });
+const { recipes, report, unmapped } = await buildRecipes(raw, steps, { concurrency: Number(process.env.CONCURRENCY ?? 3), recipeBatch: Number(process.env.RECIPE_BATCH ?? 40), log });
 
 // one recipe per line, so a re-run shows up as a readable diff
 writeFileSync(output, `[\n${recipes.map((r) => JSON.stringify(r)).join(',\n')}\n]\n`);

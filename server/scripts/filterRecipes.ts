@@ -33,7 +33,7 @@ export interface FilterOptions {
 }
 
 export const DEFAULTS: FilterOptions = {
-  minRating: 4.5, minReviews: 10, minIngredients: 4, maxIngredients: 12, maxMinutes: 90, topN: 4000, maxCategoryShare: 0.1,
+  minRating: 4.2, minReviews: 7, minIngredients: 4, maxIngredients: 12, maxMinutes: 90, topN: 4500, maxCategoryShare: 0.1,
 };
 
 /** Streams CSV text into rows. Handles quotes, "" escapes, CRLF and newlines inside quoted fields. */

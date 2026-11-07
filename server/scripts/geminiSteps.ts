@@ -10,16 +10,33 @@ import { CUISINES, EQUIPMENT, type Steps } from './enrich';
 const tidy = (s: string) => s.trim().toLowerCase().replace(/\s+/g, ' ');
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
-export function createGeminiSteps(options: { apiKey: string; model: string; cacheDir: string; log?: (m: string) => void }): Steps {
+export function createGeminiSteps(options: {
+  apiKey: string;
+  model: string;
+  cacheDir: string;
+  /** Minimum gap between API calls; the free tier allows 15 a minute, so 5000 stays under it. */
+  minGapMs?: number;
+  log?: (m: string) => void;
+}): Steps {
   const ai = new GoogleGenAI({ apiKey: options.apiKey });
   const log = options.log ?? (() => {});
   mkdirSync(options.cacheDir, { recursive: true });
+
+  // Hands out call slots one minGapMs apart, however many callers are waiting.
+  let nextSlot = 0;
+  async function waitForSlot() {
+    const now = Date.now();
+    const at = Math.max(now, nextSlot);
+    nextSlot = at + (options.minGapMs ?? 5000);
+    await sleep(at - now);
+  }
 
   async function askJson(prompt: string, schema: object): Promise<unknown> {
     const file = join(options.cacheDir, `${createHash('sha1').update(options.model + prompt).digest('hex')}.json`);
     if (existsSync(file)) return JSON.parse(readFileSync(file, 'utf8'));
     for (let attempt = 0; ; attempt++) {
       try {
+        await waitForSlot();
         const response = await ai.models.generateContent({
           model: options.model,
           contents: prompt,
@@ -32,8 +49,10 @@ export function createGeminiSteps(options: { apiKey: string; model: string; cach
       } catch (e) {
         // 429 and 5xx can pass; anything else (bad key, no credits, bad request) won't, so fail now
         const status = (e as { status?: number }).status;
-        if (attempt >= 5 || (status !== undefined && status < 500 && status !== 429)) throw e;
-        const wait = Math.min(60_000, 2000 * 2 ** attempt);
+        if (attempt >= 10 || (status !== undefined && status < 500 && status !== 429)) throw e;
+        // Gemini says how long to wait ("Please retry in 9.1s"); otherwise back off
+        const asked = /retry in ([\d.]+)s/i.exec(e instanceof Error ? e.message : '')?.[1];
+        const wait = asked ? Math.ceil(Number(asked) * 1000) + 1000 : Math.min(60_000, 2000 * 2 ** attempt);
         log(`Gemini call failed (${e instanceof Error ? e.message.slice(0, 120) : e}); retrying in ${wait / 1000}s`);
         await sleep(wait);
       }
@@ -42,8 +61,8 @@ export function createGeminiSteps(options: { apiKey: string; model: string; cach
 
   return {
     async mapIngredients(raw) {
-      const json = (await askJson(MAP_PROMPT(raw), MAP_SCHEMA)) as { items?: { raw: string; name: string | null }[] };
-      const byRaw = new Map((json.items ?? []).map((i) => [tidy(i.raw), i.name]));
+      const json = (await askJson(MAP_PROMPT(raw), MAP_SCHEMA)) as { items?: { raw: string; isIngredient: boolean; name: string }[] };
+      const byRaw = new Map((json.items ?? []).map((i) => [tidy(i.raw), i.isIngredient ? i.name : null]));
       return Object.fromEntries(raw.map((r) => [r, byRaw.get(tidy(r)) || null]));
     },
 
@@ -68,8 +87,8 @@ const MAP_SCHEMA = {
       type: 'array',
       items: {
         type: 'object',
-        properties: { raw: { type: 'string' }, name: { type: ['string', 'null'] } },
-        required: ['raw', 'name'],
+        properties: { raw: { type: 'string' }, isIngredient: { type: 'boolean' }, name: { type: 'string' } },
+        required: ['raw', 'isIngredient', 'name'],
       },
     },
   },
@@ -78,19 +97,23 @@ const MAP_SCHEMA = {
 
 const MAP_PROMPT = (raw: string[]) => `You standardise recipe ingredient wording to the generic ingredient a shopper would name.
 
-For each input line return its standard name:
-- Lowercase, singular, generic: "garlic cloves" -> "garlic", "all-purpose flour" -> "flour", "granulated sugar" -> "sugar", "boneless skinless chicken breasts" -> "chicken breast", "extra virgin olive oil" -> "olive oil".
+For each input line return:
+- isIngredient: true for any real food item, even an uncommon one (nutmeg, pecans, raisins, turmeric, water, molasses, cheese, beef). false ONLY for placeholders that name no specific food: "garnish", "ingredients", "optional toppings", "salt and pepper", "your favorite sauce".
+- name: the standard name. Always fill it in; when isIngredient is false, repeat the input.
+
+How to write name:
+- Lowercase, singular, generic: "garlic cloves" -> "garlic", "all-purpose flour" -> "flour", "granulated sugar" -> "sugar", "boneless skinless chicken breasts" -> "chicken breast", "extra virgin olive oil" -> "olive oil", "pecans" -> "pecan", "raisins" -> "raisin", "nutmeg" -> "nutmeg".
 - Drop preparation, size, brand and quantity words (chopped, fresh, large, Heinz).
-- Keep distinctions that change the dish: brown sugar vs sugar, buttermilk vs milk, cheddar cheese vs parmesan, chicken breast vs chicken thigh, red onion vs onion.
-- Prefer a name from the preferred list when one fits exactly. Use British names, as the list does (courgette, aubergine, coriander, spring onion, icing sugar, plain flour is just "flour").
-- If the line is not one specific ingredient ("garnish", "ingredients", "optional toppings", "salt and pepper", "your favorite sauce"), return null.
+- Keep distinctions that change the dish: brown sugar vs sugar, buttermilk vs milk, cheddar cheese vs parmesan, chicken breast vs chicken thigh, red onion vs onion, and forms that are a different product: garlic powder vs garlic, tomato paste vs tomato, chicken stock vs chicken, lemon juice vs lemon.
+- If a name on the preferred list fits, use it exactly. If none fits, still give your own standard name. A name missing from the list is fine; a missing answer is not.
+- Use British words, as the list does (courgette, aubergine, coriander, spring onion, beef mince, icing sugar).
 
 Preferred list: ${FIXTURE_INGREDIENTS.join(', ')}
 
 Input lines:
 ${JSON.stringify(raw)}
 
-Return every input line once, with "raw" exactly as given.`;
+Return every input line exactly once, with "raw" exactly as given.`;
 
 const CONSOLIDATE_SCHEMA = {
   type: 'object',
@@ -105,7 +128,9 @@ const CONSOLIDATE_SCHEMA = {
 
 const CONSOLIDATE_PROMPT = (names: string[]) => `Below is a list of standard ingredient names from a recipe collection. Some are the same ingredient under different names: spelling, US vs British words, singular vs plural, or needless modifiers ("scallion" / "spring onion", "cilantro" / "coriander", "confectioners sugar" / "icing sugar", "garbanzo beans" / "chickpeas", "ground beef" / "beef mince").
 
-Return merges only for names that should become another name FROM THE SAME LIST. Pick the more common British name as the target. Do not merge ingredients that cook or taste differently (brown sugar and sugar, butter and margarine, milk and buttermilk, chicken breast and chicken thigh, red onion and onion).
+Return merges only for names that should become another name FROM THE SAME LIST. Pick the more common British name as the target. A name on the preferred list below is already correct: never merge it into another name, only merge other names into it. Do not merge ingredients that cook or taste differently (brown sugar and sugar, butter and margarine, milk and buttermilk, chicken breast and chicken thigh, red onion and onion).
+
+Preferred list: ${FIXTURE_INGREDIENTS.join(', ')}
 
 Names: ${JSON.stringify(names)}`;
 
