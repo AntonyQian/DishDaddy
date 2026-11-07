@@ -4,3 +4,6 @@ node_modules/
 *.tsbuildinfo
 dist/
 .DS_Store
+
+# Raw Kaggle download (1.5 GB); rebuild server/data/filtered-recipes.json from it with npm run recipes:filter
+server/data/raw/

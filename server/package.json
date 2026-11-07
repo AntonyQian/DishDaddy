@@ -8,6 +8,8 @@
     "start": "tsx --env-file-if-exists=.env src/index.ts",
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
+    "recipes:filter": "tsx scripts/filterRecipes.ts",
+    "recipes:build": "tsx --env-file-if-exists=.env scripts/buildRecipes.ts",
     "eval": "tsx --env-file-if-exists=.env eval/run.ts"
   },
   "dependencies": {
