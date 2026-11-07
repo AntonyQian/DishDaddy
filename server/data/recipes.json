@@ -1,0 +1,467 @@
+[
+  {
+    "id": "fx-001",
+    "name": "Cheese Omelette",
+    "servings": 1,
+    "ingredients": [
+      {
+        "ingredient": "egg",
+        "quantity": "3"
+      },
+      {
+        "ingredient": "cheddar cheese",
+        "quantity": "40 g"
+      },
+      {
+        "ingredient": "butter",
+        "quantity": "1 tbsp"
+      },
+      {
+        "ingredient": "salt",
+        "quantity": "1 pinch"
+      }
+    ],
+    "equipment": [
+      "hob"
+    ],
+    "cuisine": "French",
+    "minutes": 10,
+    "steps": [
+      "Beat the eggs with salt.",
+      "Melt the butter in a pan over medium heat.",
+      "Pour in the eggs, scatter the cheese, fold and serve."
+    ],
+    "highProtein": true
+  },
+  {
+    "id": "fx-002",
+    "name": "Pancakes",
+    "servings": 4,
+    "ingredients": [
+      {
+        "ingredient": "flour",
+        "quantity": "200 g"
+      },
+      {
+        "ingredient": "milk",
+        "quantity": "300 ml"
+      },
+      {
+        "ingredient": "egg",
+        "quantity": "2"
+      },
+      {
+        "ingredient": "sugar",
+        "quantity": "1 tbsp"
+      },
+      {
+        "ingredient": "butter",
+        "quantity": "1 tbsp"
+      }
+    ],
+    "equipment": [
+      "hob"
+    ],
+    "cuisine": "American",
+    "minutes": 20,
+    "steps": [
+      "Whisk flour, milk, eggs and sugar into a batter.",
+      "Fry ladlefuls in buttered pan until golden on both sides."
+    ],
+    "highProtein": false
+  },
+  {
+    "id": "fx-003",
+    "name": "Buttermilk Pancakes",
+    "servings": 4,
+    "ingredients": [
+      {
+        "ingredient": "flour",
+        "quantity": "200 g"
+      },
+      {
+        "ingredient": "buttermilk",
+        "quantity": "300 ml"
+      },
+      {
+        "ingredient": "egg",
+        "quantity": "2"
+      },
+      {
+        "ingredient": "baking powder",
+        "quantity": "1 tsp"
+      },
+      {
+        "ingredient": "butter",
+        "quantity": "1 tbsp"
+      }
+    ],
+    "equipment": [
+      "hob"
+    ],
+    "cuisine": "American",
+    "minutes": 25,
+    "steps": [
+      "Whisk flour, baking powder, buttermilk and eggs.",
+      "Fry in buttered pan until golden."
+    ],
+    "highProtein": false
+  },
+  {
+    "id": "fx-004",
+    "name": "Tomato Pasta",
+    "servings": 2,
+    "ingredients": [
+      {
+        "ingredient": "pasta",
+        "quantity": "200 g"
+      },
+      {
+        "ingredient": "tomato",
+        "quantity": "4"
+      },
+      {
+        "ingredient": "garlic",
+        "quantity": "2 cloves"
+      },
+      {
+        "ingredient": "olive oil",
+        "quantity": "2 tbsp"
+      },
+      {
+        "ingredient": "basil",
+        "quantity": "1 handful"
+      },
+      {
+        "ingredient": "salt",
+        "quantity": "1 tsp"
+      }
+    ],
+    "equipment": [
+      "hob"
+    ],
+    "cuisine": "Italian",
+    "minutes": 20,
+    "steps": [
+      "Boil the pasta in salted water.",
+      "Fry garlic in oil, add chopped tomato and simmer.",
+      "Toss with pasta and basil."
+    ],
+    "highProtein": false
+  },
+  {
+    "id": "fx-005",
+    "name": "Baked Salmon with Lemon",
+    "servings": 2,
+    "ingredients": [
+      {
+        "ingredient": "salmon",
+        "quantity": "2 fillets"
+      },
+      {
+        "ingredient": "lemon",
+        "quantity": "1"
+      },
+      {
+        "ingredient": "olive oil",
+        "quantity": "1 tbsp"
+      },
+      {
+        "ingredient": "salt",
+        "quantity": "1 pinch"
+      },
+      {
+        "ingredient": "black pepper",
+        "quantity": "1 pinch"
+      }
+    ],
+    "equipment": [
+      "oven"
+    ],
+    "cuisine": "British",
+    "minutes": 25,
+    "steps": [
+      "Heat oven to 200C.",
+      "Place salmon on a tray, drizzle with oil, season, top with lemon slices.",
+      "Bake 15 minutes."
+    ],
+    "highProtein": true
+  },
+  {
+    "id": "fx-006",
+    "name": "Roast Chicken Thighs and Potatoes",
+    "servings": 4,
+    "ingredients": [
+      {
+        "ingredient": "chicken thigh",
+        "quantity": "8"
+      },
+      {
+        "ingredient": "potato",
+        "quantity": "600 g"
+      },
+      {
+        "ingredient": "onion",
+        "quantity": "1"
+      },
+      {
+        "ingredient": "olive oil",
+        "quantity": "2 tbsp"
+      },
+      {
+        "ingredient": "thyme",
+        "quantity": "1 tsp"
+      },
+      {
+        "ingredient": "salt",
+        "quantity": "1 tsp"
+      }
+    ],
+    "equipment": [
+      "oven"
+    ],
+    "cuisine": "British",
+    "minutes": 50,
+    "steps": [
+      "Heat oven to 220C.",
+      "Toss everything in oil and thyme on a tray.",
+      "Roast 40 minutes."
+    ],
+    "highProtein": true
+  },
+  {
+    "id": "fx-007",
+    "name": "Chicken Fried Rice",
+    "servings": 2,
+    "ingredients": [
+      {
+        "ingredient": "rice",
+        "quantity": "200 g"
+      },
+      {
+        "ingredient": "chicken breast",
+        "quantity": "1"
+      },
+      {
+        "ingredient": "egg",
+        "quantity": "2"
+      },
+      {
+        "ingredient": "spring onion",
+        "quantity": "3"
+      },
+      {
+        "ingredient": "soy sauce",
+        "quantity": "2 tbsp"
+      },
+      {
+        "ingredient": "vegetable oil",
+        "quantity": "1 tbsp"
+      },
+      {
+        "ingredient": "peas",
+        "quantity": "80 g"
+      }
+    ],
+    "equipment": [
+      "hob"
+    ],
+    "cuisine": "Chinese",
+    "minutes": 25,
+    "steps": [
+      "Cook and cool the rice.",
+      "Stir-fry the chicken, push aside, scramble the eggs.",
+      "Add rice, peas and soy sauce, finish with spring onion."
+    ],
+    "highProtein": true
+  },
+  {
+    "id": "fx-008",
+    "name": "Chickpea Curry",
+    "servings": 3,
+    "ingredients": [
+      {
+        "ingredient": "chickpeas",
+        "quantity": "400 g"
+      },
+      {
+        "ingredient": "onion",
+        "quantity": "1"
+      },
+      {
+        "ingredient": "garlic",
+        "quantity": "2 cloves"
+      },
+      {
+        "ingredient": "ginger",
+        "quantity": "1 thumb"
+      },
+      {
+        "ingredient": "tomato",
+        "quantity": "3"
+      },
+      {
+        "ingredient": "cumin",
+        "quantity": "1 tsp"
+      },
+      {
+        "ingredient": "coconut milk",
+        "quantity": "200 ml"
+      },
+      {
+        "ingredient": "vegetable oil",
+        "quantity": "1 tbsp"
+      }
+    ],
+    "equipment": [
+      "hob"
+    ],
+    "cuisine": "Indian",
+    "minutes": 30,
+    "steps": [
+      "Fry onion, garlic and ginger in oil with cumin.",
+      "Add tomato, chickpeas and coconut milk.",
+      "Simmer 15 minutes."
+    ],
+    "highProtein": false
+  },
+  {
+    "id": "fx-009",
+    "name": "Air Fryer Sweet Potato Wedges",
+    "servings": 2,
+    "ingredients": [
+      {
+        "ingredient": "sweet potato",
+        "quantity": "2"
+      },
+      {
+        "ingredient": "olive oil",
+        "quantity": "1 tbsp"
+      },
+      {
+        "ingredient": "paprika",
+        "quantity": "1 tsp"
+      },
+      {
+        "ingredient": "salt",
+        "quantity": "1 tsp"
+      }
+    ],
+    "equipment": [
+      "air fryer"
+    ],
+    "cuisine": "American",
+    "minutes": 30,
+    "steps": [
+      "Cut into wedges and toss with oil and paprika.",
+      "Air fry at 200C for 20 minutes."
+    ],
+    "highProtein": false
+  },
+  {
+    "id": "fx-010",
+    "name": "Green Smoothie",
+    "servings": 1,
+    "ingredients": [
+      {
+        "ingredient": "spinach",
+        "quantity": "1 handful"
+      },
+      {
+        "ingredient": "banana",
+        "quantity": "1"
+      },
+      {
+        "ingredient": "milk",
+        "quantity": "200 ml"
+      },
+      {
+        "ingredient": "honey",
+        "quantity": "1 tsp"
+      }
+    ],
+    "equipment": [
+      "blender"
+    ],
+    "cuisine": "American",
+    "minutes": 5,
+    "steps": [
+      "Blend everything until smooth."
+    ],
+    "highProtein": false
+  },
+  {
+    "id": "fx-011",
+    "name": "Leek and Potato Soup",
+    "servings": 4,
+    "ingredients": [
+      {
+        "ingredient": "leek",
+        "quantity": "3"
+      },
+      {
+        "ingredient": "potato",
+        "quantity": "400 g"
+      },
+      {
+        "ingredient": "butter",
+        "quantity": "1 tbsp"
+      },
+      {
+        "ingredient": "chicken stock",
+        "quantity": "750 ml"
+      },
+      {
+        "ingredient": "salt",
+        "quantity": "1 tsp"
+      },
+      {
+        "ingredient": "black pepper",
+        "quantity": "1 pinch"
+      }
+    ],
+    "equipment": [
+      "hob",
+      "blender"
+    ],
+    "cuisine": "British",
+    "minutes": 40,
+    "steps": [
+      "Soften the leeks in butter.",
+      "Add potato and stock, simmer 20 minutes.",
+      "Blend until smooth and season."
+    ],
+    "highProtein": false
+  },
+  {
+    "id": "fx-012",
+    "name": "Tuna Mayo Sandwich",
+    "servings": 1,
+    "ingredients": [
+      {
+        "ingredient": "bread",
+        "quantity": "2 slices"
+      },
+      {
+        "ingredient": "tuna",
+        "quantity": "1 tin"
+      },
+      {
+        "ingredient": "mayonnaise",
+        "quantity": "1 tbsp"
+      },
+      {
+        "ingredient": "cucumber",
+        "quantity": "4 slices"
+      }
+    ],
+    "equipment": [],
+    "cuisine": "British",
+    "minutes": 5,
+    "steps": [
+      "Mix tuna and mayonnaise.",
+      "Fill the bread with tuna and cucumber."
+    ],
+    "highProtein": true
+  }
+]
