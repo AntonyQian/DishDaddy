@@ -5,23 +5,33 @@ Build plan for the 24h hackathon. Terms follow [GLOSSARY.md](../GLOSSARY.md); de
 **Priority:** the camera path (T2–T7) comes first. Everything else is secondary.
 **Unblocking:** T0 and T1 come first, and every task after them can start against mocks or fixtures that use the T1 types.
 
-| # | Task | Depends on | Track |
+## Branches
+
+Each of the four lanes works on its own branch and merges into `main` only when a task's **Done when** is met. The full rules are in [AGENTS.md](../AGENTS.md).
+
+- T0 and T1 go straight to `main` in hour 1. Every lane then merges `main` into its branch.
+- `detection`: Gemini detection, test set, accuracy eval (T2–T4)
+- `scan-review`: capture screen, Review screen, barcode override (T5–T7)
+- `recipes`: recipe collection build, search endpoints (T8–T9)
+- `app-features`: recipe screens, Substitutions, Equipment, Staples, Saved Recipes, demo (T10–T14)
+
+| # | Task | Depends on | Branch |
 |---|------|-----------|-------|
-| T0 | Repo scaffold | – | Setup |
-| T1 | Shared contracts | – | Setup |
-| T2 | Labelled test set | – | Camera |
-| T3 | `/scan` detection endpoint | T0, T1 | Camera |
-| T4 | Accuracy eval script | T2, T3 | Camera |
-| T5 | Scan capture screen | T0, T1 | Camera |
-| T6 | Review screen | T1 (T9 for real vocabulary) | Camera |
-| T7 | Barcode override | T6 | Camera |
-| T8 | Recipe collection build | T0 | Recipes |
-| T9 | Recipe search + vocabulary endpoints | T1 (T8 for real data) | Recipes |
-| T10 | Recipe Match list + Recipe detail screens | T1 | Recipes |
-| T11 | Substitutions | T9, T10 | Recipes |
-| T12 | Equipment + Staples screens | T0 | Secondary |
-| T13 | Saved Recipes | T10 | Secondary |
-| T14 | Demo + submission | everything | Ship |
+| T0 | Repo scaffold | – | `main` |
+| T1 | Shared contracts | – | `main` |
+| T2 | Labelled test set | – | `detection` |
+| T3 | `/scan` detection endpoint | T0, T1 | `detection` |
+| T4 | Accuracy eval script | T2, T3 | `detection` |
+| T5 | Scan capture screen | T0, T1 | `scan-review` |
+| T6 | Review screen | T1 (T9 for real vocabulary) | `scan-review` |
+| T7 | Barcode override | T6 | `scan-review` |
+| T8 | Recipe collection build | T0 | `recipes` |
+| T9 | Recipe search + vocabulary endpoints | T1 (T8 for real data) | `recipes` |
+| T10 | Recipe Match list + Recipe detail screens | T1 | `app-features` |
+| T11 | Substitutions | T9, T10 | `app-features` |
+| T12 | Equipment + Staples screens | T0 | `app-features` |
+| T13 | Saved Recipes | T10 | `app-features` |
+| T14 | Demo + submission | everything | `app-features` |
 
 ---
 
