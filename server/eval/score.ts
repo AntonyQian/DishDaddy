@@ -1,4 +1,4 @@
-import type { ScanResult } from '@fridge/shared';
+import { LOW_CONFIDENCE, type Detection, type ScanResult } from '@fridge/shared';
 
 // The accuracy bar from ADR 0001, measured before Review.
 export const BAR = { foundRate: 0.9, madeUp: 0 };
@@ -15,21 +15,44 @@ export interface ScanScore {
   ms: number;
 }
 
-export function scoreScan(truth: string[], result: ScanResult, ms: number): ScanScore {
-  const expected = new Set(truth);
-  const options = (d: ScanResult['detections'][number]) =>
-    [d.ingredient, ...d.alternatives].filter((x): x is string => x !== null);
+/**
+ * The options Review puts in front of the user for a Detection: its name, plus
+ * its alternatives when Review shows it as a choice (low confidence) or as an
+ * Unidentified Item.
+ */
+function offered(d: Detection): string[] {
+  const showsAlternatives = d.ingredient === null || d.confidence < LOW_CONFIDENCE;
+  return [d.ingredient, ...(showsAlternatives ? d.alternatives : [])].filter((x): x is string => x !== null);
+}
 
-  const offered = new Set(result.detections.flatMap(options));
-  const missed = [...expected].filter((i) => !offered.has(i));
+export function scoreScan(truth: string[], result: ScanResult, ms: number): ScanScore {
+  const expected = [...new Set(truth)];
+  const used = new Set<Detection>();
+  const found = new Set<string>();
+
+  // Each Detection stands for one physical item, so it can find at most one
+  // Ingredient. Exact names are matched first, then offered alternatives.
+  const match = (accepts: (d: Detection, ingredient: string) => boolean) => {
+    for (const ingredient of expected) {
+      if (found.has(ingredient)) continue;
+      const hit = result.detections.find((d) => !used.has(d) && accepts(d, ingredient));
+      if (hit) {
+        used.add(hit);
+        found.add(ingredient);
+      }
+    }
+  };
+  match((d, i) => d.ingredient === i);
+  match((d, i) => offered(d).includes(i));
+
   const madeUp = result.detections
-    .filter((d) => d.ingredient !== null && !options(d).some((o) => expected.has(o)))
+    .filter((d) => d.ingredient !== null && !offered(d).some((o) => expected.includes(o)))
     .map((d) => d.ingredient!);
 
   return {
-    expected: expected.size,
-    found: expected.size - missed.length,
-    missed,
+    expected: expected.length,
+    found: found.size,
+    missed: expected.filter((i) => !found.has(i)),
     madeUp,
     unidentified: result.detections.filter((d) => d.ingredient === null).length,
     ms,

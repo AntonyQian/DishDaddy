@@ -2,8 +2,8 @@ import { describe, expect, it } from 'vitest';
 import type { Detection } from '@fridge/shared';
 import { scoreScan, summarise } from './score';
 
-const d = (ingredient: string | null, alternatives: string[] = []): Detection => ({
-  ingredient, label: ingredient ?? '?', confidence: 0.9, box: [0, 0, 1, 1], photoIndex: 0, alternatives,
+const d = (ingredient: string | null, alternatives: string[] = [], confidence = 0.5): Detection => ({
+  ingredient, label: ingredient ?? '?', confidence, box: [0, 0, 1, 1], photoIndex: 0, alternatives,
 });
 
 describe('scoreScan', () => {
@@ -20,6 +20,25 @@ describe('scoreScan', () => {
   it('counts Unidentified Items separately, as neither found nor made up', () => {
     const score = scoreScan(['egg'], { detections: [d(null), d(null, ['egg'])] }, 0);
     expect(score).toMatchObject({ found: 1, madeUp: [], unidentified: 2 });
+  });
+});
+
+describe('scoreScan, counting only what Review offers', () => {
+  it('ignores alternatives on a confident Detection, since Review does not offer them', () => {
+    const score = scoreScan(['milk'], { detections: [d('oat milk', ['milk'], 0.95)] }, 0);
+    expect(score).toMatchObject({ found: 0, missed: ['milk'], madeUp: ['oat milk'] });
+  });
+
+  it('lets one Detection find only one Ingredient', () => {
+    const score = scoreScan(['leek', 'spring onion'], { detections: [d('leek', ['spring onion'])] }, 0);
+    expect(score).toMatchObject({ found: 1, missed: ['spring onion'] });
+  });
+
+  it('prefers an exact name before using a Detection for its alternatives', () => {
+    const score = scoreScan(['leek', 'spring onion'], {
+      detections: [d('leek', ['spring onion']), d('spring onion', ['leek'])],
+    }, 0);
+    expect(score).toMatchObject({ found: 2, missed: [] });
   });
 });
 
