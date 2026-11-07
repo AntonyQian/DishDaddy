@@ -27,3 +27,17 @@ Commits, PRs and issues are authored by the human developer alone: plain commit 
 - `GLOSSARY.md`: the project's terms (Scan, Detection, Review, Ingredient, Staple, Recipe Match…). Use these names in code, UI copy and commits.
 - `docs/adr/`: read before changing how ingredients are detected or where recipes come from.
 - `docs/TASKS.md`: each task's scope and its **Done when** criterion.
+
+## Agent skills
+
+### Issue tracker
+
+Issues are tracked in GitHub Issues (AntonyQian/HackCamp2026) via the `gh` CLI. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Default vocabulary: needs-triage, needs-info, ready-for-agent, ready-for-human, wontfix. See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context: one `GLOSSARY.md` and `docs/adr/` at the repo root. See `docs/agents/domain.md`.
