@@ -57,6 +57,13 @@ describe('buildRecipes', () => {
     expect(r.cuisine).toBe('Other');
   });
 
+  it('lets known corrections beat the model: powders, broths and sauces are not the thing they flavour', async () => {
+    const wrong = { 'garlic powder': 'garlic', 'vegetable broth': 'chicken stock', 'beef broth': 'beef mince', 'chili sauce': 'ketchup', 'cocoa powder': 'chocolate' };
+    const { steps } = fakeSteps(wrong);
+    const [r] = (await buildRecipes([raw('1', ['Garlic Powder', 'vegetable broth', 'beef broth', 'chili sauce', 'cocoa powder'])], steps)).recipes;
+    expect(r.ingredients.map((i) => i.ingredient)).toEqual(['garlic powder', 'vegetable stock', 'beef stock', 'chilli sauce', 'cocoa powder']);
+  });
+
   it('drops a recipe when an ingredient cannot be mapped, and does not spend enrichment on it', async () => {
     const { steps, calls } = fakeSteps({ garnish: null });
     const { recipes, report } = await buildRecipes([raw('1', ['a', 'b', 'c', 'garnish']), raw('2', ['a', 'b', 'c', 'd'])], steps);

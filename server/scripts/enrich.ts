@@ -45,6 +45,25 @@ export interface BuildReport {
   ingredients: number;
 }
 
+/**
+ * Corrections for wordings the model gets wrong in bulk. Checked after the model,
+ * and they win. Each names a different product from the thing it flavours, so a
+ * recipe that needs garlic powder must not match someone who has only garlic.
+ */
+export const OVERRIDES: [RegExp, string][] = [
+  [/\bgarlic powder\b/, 'garlic powder'],
+  [/\bonion powder\b/, 'onion powder'],
+  [/\bmustard powder\b/, 'mustard powder'],
+  [/\b(ginger powder|ground ginger)\b/, 'ground ginger'],
+  [/\bcocoa powder\b|\bunsweetened cocoa\b/, 'cocoa powder'],
+  [/\b(vegetable|veggie) (broth|stock)\b/, 'vegetable stock'],
+  [/\bbeef (broth|stock|bouillon)\b/, 'beef stock'],
+  [/\bchil+[ie]? sauce\b/, 'chilli sauce'],
+  [/\b(bisquick|baking mix)\b/, 'baking mix'],
+  [/\blemon[- ]pepper\b/, 'lemon pepper'],
+  [/\b(red pepper|chil+[ie]|chilli) flakes\b/, 'chilli flakes'],
+];
+
 const tidy = (s: string) => s.trim().toLowerCase().replace(/\s+/g, ' ');
 
 const chunk = <T>(items: T[], size: number): T[][] =>
@@ -89,7 +108,8 @@ export async function buildRecipes(
     const to = merges[n] && tidy(merges[n]);
     return to && known.has(to) ? to : n;
   };
-  const mapping = new Map([...first].map(([w, n]) => [w, n && finalName(n)] as const));
+  const override = (w: string) => OVERRIDES.find(([pattern]) => pattern.test(w))?.[1];
+  const mapping = new Map([...first].map(([w, n]) => [w, override(w) ?? (n && finalName(n))] as const));
 
   // 3. Drop recipes with an ingredient we can't name.
   const survivors: RawRecipe[] = [];
