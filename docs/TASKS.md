@@ -36,7 +36,7 @@ Each of the four lanes works on its own branch and merges into `main` only when 
 ---
 
 ## T0 – Repo scaffold
-- `app/`: Expo (SDK 56) with Expo Router, running in Expo Go on both iOS and Android.
+- `app/`: Expo (SDK 58) with Expo Router, running in Expo Go on both iOS and Android.
 - `server/`: a TypeScript server using Hono, with the Gemini key in `.env`, and `.env.example` committed.
 - `shared/`: TypeScript types imported by both.
 - The server is deployed to a free Node host so phones at the demo can reach it, and the app reads the server URL from config.

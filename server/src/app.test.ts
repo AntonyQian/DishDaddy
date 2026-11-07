@@ -3,7 +3,7 @@ import { createApp } from './app';
 
 describe('GET /health', () => {
   it('reports ok', async () => {
-    const res = await createApp().request('/health');
+    const res = await createApp({}).request('/health');
     expect(res.status).toBe(200);
     expect(await res.json()).toEqual({ ok: true });
   });
@@ -14,7 +14,7 @@ describe('recipe endpoints', () => {
     id: 'r1', name: 'Omelette', servings: 1, equipment: ['hob'], cuisine: 'French', minutes: 10, steps: ['Cook.'], highProtein: true,
     ingredients: [{ ingredient: 'egg', quantity: '2' }, { ingredient: 'butter', quantity: '1 tbsp' }],
   };
-  const app = createApp([recipe]);
+  const app = createApp({ recipes: [recipe] });
   const post = (body: unknown) =>
     app.request('/recipes/search', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) });
 

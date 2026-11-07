@@ -1,49 +1,65 @@
-import { useEffect, useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { router, useFocusEffect } from 'expo-router';
+import { useCallback, useState } from 'react';
+import { Alert, ScrollView, StyleSheet, View } from 'react-native';
 
+import { Button, T } from '@/components/ui';
 import { getHealth } from '@/lib/api';
-import { SERVER_URL } from '@/lib/config';
-
-type Status = 'checking' | 'ok' | 'error';
+import { MOCK_SCAN, SERVER_URL } from '@/lib/config';
+import { loadLatestScan, type LatestScan } from '@/lib/latestScan';
+import { useScan } from '@/scan/ScanContext';
 
 export default function HomeScreen() {
-  const [status, setStatus] = useState<Status>('checking');
-  const [error, setError] = useState<string>();
+  const scan = useScan();
+  const [latest, setLatest] = useState<LatestScan | null>(null);
+  const [server, setServer] = useState<'checking' | 'ok' | 'down'>('checking');
 
-  const check = () => {
-    setStatus('checking');
-    getHealth()
-      .then(() => setStatus('ok'))
-      .catch((e: unknown) => {
-        setError(e instanceof Error ? e.message : String(e));
-        setStatus('error');
-      });
+  useFocusEffect(
+    useCallback(() => {
+      loadLatestScan().then(setLatest).catch(() => setLatest(null));
+      getHealth().then(() => setServer('ok'), () => setServer('down'));
+    }, []),
+  );
+
+  const startScan = () => {
+    const begin = () => {
+      scan.reset();
+      router.push('/scan');
+    };
+    if (scan.photos.length === 0) return begin();
+    Alert.alert('Start a new Scan?', `Your ${scan.photos.length} photos from the current Scan will be dropped.`, [
+      { text: 'Keep them', style: 'cancel' },
+      { text: 'Start new', style: 'destructive', onPress: begin },
+    ]);
   };
 
-  useEffect(check, []);
-
   return (
-    <View style={styles.container}>
-      <Text style={styles.label}>Server</Text>
-      <Text selectable>{SERVER_URL}</Text>
-      <Text style={styles.status}>
-        {status === 'checking' && 'Checking…'}
-        {status === 'ok' && 'Connected'}
-        {status === 'error' && `Not reachable: ${error}`}
-      </Text>
-      {status === 'error' && (
-        <Pressable onPress={check} style={styles.button}>
-          <Text style={styles.buttonText}>Retry</Text>
-        </Pressable>
+    <ScrollView contentContainerStyle={styles.container}>
+      <Button title="Start a Scan" onPress={startScan} />
+      {scan.photos.length > 0 && (
+        <Button title={`Continue Scan (${scan.photos.length} photos)`} variant="secondary" onPress={() => router.push('/scan')} />
       )}
-    </View>
+
+      {latest && (
+        <View style={styles.section}>
+          <T style={styles.heading}>Latest Scan</T>
+          <T dim>{new Date(latest.confirmedAt).toLocaleString()}</T>
+          <T>{latest.ingredients.length ? latest.ingredients.join(', ') : 'No Ingredients confirmed'}</T>
+        </View>
+      )}
+
+      <View style={styles.section}>
+        <T dim style={styles.small}>
+          Server {SERVER_URL}: {server === 'checking' ? 'checking…' : server === 'ok' ? 'connected' : 'not reachable'}
+          {MOCK_SCAN ? ' (mock Scans on)' : ''}
+        </T>
+      </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 24, gap: 8, justifyContent: 'center' },
-  label: { fontSize: 14, opacity: 0.6 },
-  status: { fontSize: 18, fontWeight: '600', marginTop: 8 },
-  button: { marginTop: 12, padding: 12, borderRadius: 8, backgroundColor: '#208AEF', alignSelf: 'flex-start' },
-  buttonText: { color: 'white', fontWeight: '600' },
+  container: { padding: 20, gap: 12 },
+  section: { marginTop: 16, gap: 4 },
+  heading: { fontSize: 18, fontWeight: '700' },
+  small: { fontSize: 13 },
 });
