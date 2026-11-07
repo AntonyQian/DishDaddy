@@ -15,10 +15,8 @@ export default function ScanningScreen() {
   const [checking, setChecking] = useState(1);
   const attempt = useRef(0);
 
-  const run = useCallback(() => {
+  const send = useCallback(() => {
     const thisAttempt = ++attempt.current;
-    setError(null);
-    setChecking(1);
     postScan(photos)
       .then((result) => {
         if (thisAttempt !== attempt.current) return;
@@ -31,16 +29,23 @@ export default function ScanningScreen() {
       });
   }, [photos, setResult]);
 
+  const retry = () => {
+    setError(null);
+    setChecking(1);
+    send();
+  };
+
   useEffect(() => {
     if (photos.length === 0) {
       router.back();
       return;
     }
-    run();
+    send();
+    const attempts = attempt;
     return () => {
-      attempt.current++; // ignore an answer that arrives after leaving this screen
+      attempts.current++; // ignore an answer that arrives after leaving this screen
     };
-  }, [run, photos.length]);
+  }, [send, photos.length]);
 
   useEffect(() => {
     if (error) return;
@@ -58,7 +63,7 @@ export default function ScanningScreen() {
         <T dim style={styles.text}>
           Your {photos.length} photo{photos.length > 1 ? 's are' : ' is'} kept.
         </T>
-        <Button title="Retry" onPress={run} />
+        <Button title="Retry" onPress={retry} />
         <Button title="Back to photos" variant="secondary" onPress={() => router.back()} />
       </View>
     );

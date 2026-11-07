@@ -1,6 +1,6 @@
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { Alert, ScrollView, StyleSheet, View } from 'react-native';
 
 import { Button, T } from '@/components/ui';
 import { getHealth } from '@/lib/api';
@@ -21,8 +21,15 @@ export default function HomeScreen() {
   );
 
   const startScan = () => {
-    scan.reset();
-    router.push('/scan');
+    const begin = () => {
+      scan.reset();
+      router.push('/scan');
+    };
+    if (scan.photos.length === 0) return begin();
+    Alert.alert('Start a new Scan?', `Your ${scan.photos.length} photos from the current Scan will be dropped.`, [
+      { text: 'Keep them', style: 'cancel' },
+      { text: 'Start new', style: 'destructive', onPress: begin },
+    ]);
   };
 
   return (

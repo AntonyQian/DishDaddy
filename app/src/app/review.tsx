@@ -1,17 +1,17 @@
 import { router, useTheme } from 'expo-router';
 import { useState } from 'react';
-import { Alert, Modal, Pressable, ScrollView, StyleSheet, View, type ColorValue } from 'react-native';
+import { Alert, Modal, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button, Chip, T } from '@/components/ui';
 import { saveLatestScan } from '@/lib/latestScan';
 import { useIngredientList } from '@/lib/useIngredientList';
-import { Crop, IngredientInput, OffListWarning, PhotoWithBoxes, boxColor } from '@/review/components';
+import { ItemRow } from '@/review/ItemRow';
+import { IngredientInput, PhotoWithBoxes } from '@/review/components';
 import {
-  add, choicesFor, choose, confirm, confirmAll, confirmedIngredients, kindOf, name, remove, startReview, type ReviewItem,
+  add, choose, confirm, confirmAll, confirmedIngredients, name, remove, startReview, type ReviewItem,
 } from '@/review/reviewState';
 import { useScan } from '@/scan/ScanContext';
-import type { CapturedPhoto } from '@/scan/types';
 
 export default function ReviewScreen() {
   const { photos, result, reset } = useScan();
@@ -49,16 +49,15 @@ export default function ReviewScreen() {
       reset();
       router.dismissTo('/');
     } catch (e) {
-      Alert.alert('Could not save the Scan', e instanceof Error ? e.message : String(e));
-    } finally {
       setSaving(false);
+      Alert.alert('Could not save the Scan', e instanceof Error ? e.message : String(e));
     }
   };
 
   const finish = () => {
     if (pendingCount === 0) return done();
     Alert.alert(
-      `${pendingCount} item${pendingCount > 1 ? 's' : ''} not reviewed`,
+      `${pendingCount} still to review`,
       'Only confirmed Ingredients are kept. Finish anyway?',
       [{ text: 'Keep reviewing', style: 'cancel' }, { text: 'Finish', onPress: done }],
     );
@@ -79,7 +78,7 @@ export default function ReviewScreen() {
         )}
 
         <View style={styles.listHeader}>
-          <T style={styles.heading}>Found {visible.filter((i) => i.detection).length} items</T>
+          <T style={styles.heading}>Found {visible.filter((i) => i.detection).length} in your photos</T>
           <Button title="Confirm all" variant="secondary" onPress={() => setItems(confirmAll)} style={styles.small} />
         </View>
 
@@ -128,80 +127,6 @@ export default function ReviewScreen() {
   );
 }
 
-function ItemRow({
-  item, photo, selected, vocabulary, borderColor, onSelect, onConfirm, onRemove, onChoose, onName,
-}: {
-  item: ReviewItem;
-  photo?: CapturedPhoto;
-  selected: boolean;
-  vocabulary: readonly string[];
-  borderColor: ColorValue;
-  onSelect: () => void;
-  onConfirm: () => void;
-  onRemove: () => void;
-  onChoose: (ingredient: string) => void;
-  onName: (text: string) => void;
-}) {
-  const kind = kindOf(item);
-  const isConfirmed = item.status === 'confirmed';
-  const options = choicesFor(item);
-
-  return (
-    <Pressable
-      onPress={onSelect}
-      style={[styles.row, { borderColor: selected ? boxColor(item) : borderColor, borderLeftColor: boxColor(item) }]}>
-      <View style={styles.rowTop}>
-        {kind === 'unidentified' && photo && item.detection && <Crop photo={photo} box={item.detection.box} />}
-        <View style={{ flex: 1, gap: 2 }}>
-          {kind === 'unidentified' && !isConfirmed ? (
-            <T style={styles.itemName}>What is this?</T>
-          ) : kind === 'choice' && !isConfirmed ? (
-            <T style={styles.itemName}>Is this {options.join(' or ')}?</T>
-          ) : (
-            <T style={styles.itemName}>{item.ingredient}</T>
-          )}
-          {item.detection && (
-            <T dim style={styles.meta}>
-              {item.detection.label}
-              {item.detection.visibleText ? ` · “${item.detection.visibleText}”` : ''}
-            </T>
-          )}
-          {isConfirmed && item.ingredient && <OffListWarning ingredient={item.ingredient} vocabulary={vocabulary} />}
-        </View>
-        {isConfirmed ? (
-          <T style={styles.tick}>✓</T>
-        ) : (
-          kind === 'named' && <Chip title="Confirm" onPress={onConfirm} />
-        )}
-        <Pressable accessibilityRole="button" accessibilityLabel="Remove" onPress={onRemove} hitSlop={8} style={styles.remove}>
-          <T dim style={styles.removeText}>×</T>
-        </Pressable>
-      </View>
-
-      {!isConfirmed && kind === 'choice' && (
-        <View style={styles.chips}>
-          {options.map((o) => (
-            <Chip key={o} title={o} onPress={() => onChoose(o)} />
-          ))}
-          <Chip title="Something else" onPress={onSelect} />
-        </View>
-      )}
-      {!isConfirmed && (kind === 'unidentified' || (kind === 'choice' && selected)) && (
-        <>
-          {kind === 'unidentified' && options.length > 0 && (
-            <View style={styles.chips}>
-              {options.map((o) => (
-                <Chip key={o} title={o} onPress={() => onChoose(o)} />
-              ))}
-            </View>
-          )}
-          <IngredientInput vocabulary={vocabulary} placeholder="Type what it is" onSubmit={onName} />
-        </>
-      )}
-    </Pressable>
-  );
-}
-
 const styles = StyleSheet.create({
   container: { flex: 1 },
   scroll: { padding: 16, gap: 12, paddingBottom: 32 },
@@ -210,13 +135,6 @@ const styles = StyleSheet.create({
   listHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 8 },
   heading: { fontSize: 18, fontWeight: '700' },
   small: { paddingVertical: 8 },
-  row: { borderWidth: 1, borderLeftWidth: 5, borderRadius: 10, padding: 12, gap: 10 },
-  rowTop: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  itemName: { fontSize: 17, fontWeight: '600' },
-  meta: { fontSize: 13 },
-  tick: { fontSize: 20, color: '#1E9E5A', fontWeight: '700' },
-  remove: { paddingHorizontal: 6 },
-  removeText: { fontSize: 24 },
   footer: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 16, borderTopWidth: StyleSheet.hairlineWidth },
   footerText: { flex: 1 },
   modal: { flex: 1, padding: 20, gap: 16 },

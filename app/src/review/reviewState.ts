@@ -20,7 +20,7 @@ export function kindOf(item: ReviewItem): ReviewKind {
   const det = item.detection;
   if (!det) return 'added';
   if (det.ingredient === null) return 'unidentified';
-  return det.confidence < LOW_CONFIDENCE ? 'choice' : 'named';
+  return det.confidence < LOW_CONFIDENCE && det.alternatives.length > 0 ? 'choice' : 'named';
 }
 
 /** The options for an "Is this X or Y?" choice, most likely first. */

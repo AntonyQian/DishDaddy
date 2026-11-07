@@ -4,11 +4,9 @@ import { useTheme } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
-import { ACCENT, Chip, T, WARN } from '@/components/ui';
+import { ACCENT, CONFIRMED, Chip, T, WARN } from '@/components/ui';
 import type { CapturedPhoto } from '@/scan/types';
 import { isOnList, kindOf, suggest, type ReviewItem } from './reviewState';
-
-const CONFIRMED = '#1E9E5A';
 
 export function boxColor(item: ReviewItem): string {
   if (item.status === 'confirmed') return CONFIRMED;

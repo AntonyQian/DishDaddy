@@ -5,6 +5,7 @@ import { ActivityIndicator, Pressable, StyleSheet, Text, type StyleProp, type Te
 export const ACCENT = '#208AEF';
 export const WARN = '#C77700';
 export const DANGER = '#D93025';
+export const CONFIRMED = '#1E9E5A';
 
 export function T({ children, style, dim }: { children: ReactNode; style?: StyleProp<TextStyle>; dim?: boolean }) {
   const { colors } = useTheme();

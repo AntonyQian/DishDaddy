@@ -16,6 +16,11 @@ describe('Review', () => {
     expect(items.every((i) => i.status === 'pending')).toBe(true);
   });
 
+  it('shows a low-confidence Detection with no alternatives to confirm, since there is nothing to choose between', () => {
+    const [item] = startReview({ detections: [d('leek', 0.5)] });
+    expect(kindOf(item)).toBe('named');
+  });
+
   it('confirms only what the user confirmed or chose', () => {
     let items = startReview({ detections: [d('egg'), d('milk'), d('leek', 0.5, ['spring onion'])] });
     items = confirm(items, items[0].id);

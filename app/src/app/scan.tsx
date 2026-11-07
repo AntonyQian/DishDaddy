@@ -25,7 +25,8 @@ export default function ScanCaptureScreen() {
   const [taking, setTaking] = useState(false);
   const { photos, addPhoto, removePhoto } = useScan();
 
-  const spot = SPOTS[photos.length] ?? 'Anything else';
+  // The first spot not yet photographed, so removing a photo brings its prompt back.
+  const spot = SPOTS.find((s) => !photos.some((p) => p.spot === s)) ?? 'Anything else';
 
   if (!permission) return <View style={styles.center} />;
   if (!permission.granted) {
