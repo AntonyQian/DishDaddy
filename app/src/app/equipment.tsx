@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { ACCENT, DANGER, Screen, T } from '@/components/ui';
-import { ALL_EQUIPMENT, DEFAULT_EQUIPMENT, loadEquipment, saveEquipment, toggleEquipment } from '@/lib/kitchen';
+import { ALL_EQUIPMENT, DEFAULT_EQUIPMENT, equipmentLabel, loadEquipment, saveEquipment, toggleEquipment } from '@/lib/kitchen';
 
 function EquipmentBody() {
   const { colors } = useTheme();
@@ -50,7 +50,7 @@ function EquipmentBody() {
             <View style={[styles.box, { borderColor: has ? ACCENT : colors.border, backgroundColor: has ? ACCENT : 'transparent' }]}>
               {has && <T style={styles.tick}>✓</T>}
             </View>
-            <T>{item}</T>
+            <T>{equipmentLabel(item)}</T>
           </Pressable>
         );
       })}

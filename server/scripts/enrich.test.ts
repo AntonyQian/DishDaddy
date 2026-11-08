@@ -60,6 +60,13 @@ describe('buildRecipes', () => {
     expect('calories' in recipes[1] || 'proteinGrams' in recipes[1]).toBe(false);
   });
 
+  it('folds the model\'s mixers and food processors into the Equipment we support', async () => {
+    const { steps } = fakeSteps({});
+    steps.enrich = async (batch) => Object.fromEntries(batch.map((r) => [r.id, { equipment: ['Hand mixer', 'stand mixer', 'food processor', 'stove', 'hob'], cuisine: 'Italian' }]));
+    const [r] = (await buildRecipes([raw('1', ['a', 'b', 'c', 'd'])], steps)).recipes;
+    expect(r.equipment).toEqual(['mixer', 'blender', 'hob']);
+  });
+
   it('keeps only known Equipment, once each, and falls back to Other for an unknown cuisine', async () => {
     const { steps } = fakeSteps({});
     const [r] = (await buildRecipes([raw('1', ['a', 'b', 'c', 'd'])], steps)).recipes;

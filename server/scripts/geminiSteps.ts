@@ -5,7 +5,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { GoogleGenAI } from '@google/genai';
 import { FIXTURE_INGREDIENTS } from '@fridge/shared';
-import { CUISINES, EQUIPMENT, type Steps } from './enrich';
+import { CUISINES, MODEL_EQUIPMENT, type Steps } from './enrich';
 
 const tidy = (s: string) => s.trim().toLowerCase().replace(/\s+/g, ' ');
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
@@ -143,7 +143,7 @@ const ENRICH_SCHEMA = {
         type: 'object',
         properties: {
           id: { type: 'string' },
-          equipment: { type: 'array', items: { type: 'string', enum: [...EQUIPMENT] } },
+          equipment: { type: 'array', items: { type: 'string', enum: [...MODEL_EQUIPMENT] } },
           cuisine: { type: 'string', enum: [...CUISINES] },
         },
         required: ['id', 'equipment', 'cuisine'],

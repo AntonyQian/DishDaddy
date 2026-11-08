@@ -7,9 +7,20 @@ import type { RawRecipe } from './filterRecipes';
 
 /** Appliances that decide whether a user can cook a Recipe. Bowls, knives and pans are assumed. */
 export const EQUIPMENT = [
+  'hob', 'oven', 'grill', 'microwave', 'blender', 'mixer', 'meat grinder',
+  'slow cooker', 'toaster', 'rice cooker', 'air fryer', 'pressure cooker',
+] as const;
+
+/** What Gemini is asked to choose from. It predates `EQUIPMENT`, and keeping it as asked keeps the cached answers valid. */
+export const MODEL_EQUIPMENT = [
   'oven', 'hob', 'microwave', 'air fryer', 'blender', 'food processor', 'slow cooker',
   'pressure cooker', 'grill', 'stand mixer', 'hand mixer', 'rice cooker', 'toaster',
 ] as const;
+
+/** What the model's names become: the app has one "mixers" and no food processor, so a food processor recipe needs a blender. */
+export const EQUIPMENT_ALIASES: Record<string, string> = {
+  'hand mixer': 'mixer', 'stand mixer': 'mixer', 'food processor': 'blender', stove: 'hob',
+};
 
 export const CUISINES = [
   'American', 'British', 'Chinese', 'French', 'Greek', 'Indian', 'Italian', 'Japanese', 'Korean',
@@ -140,7 +151,7 @@ export async function buildRecipes(
       imageUrl: r.imageUrl,
       servings: r.servings,
       ingredients: r.ingredients.map((i) => ({ ingredient: mapping.get(tidy(i.name))!, quantity: i.quantity, original: i.name.trim() })),
-      equipment: [...new Set(e.equipment.map(tidy))].filter((x) => (EQUIPMENT as readonly string[]).includes(x)),
+      equipment: [...new Set(e.equipment.map((x) => EQUIPMENT_ALIASES[tidy(x)] ?? tidy(x)))].filter((x) => (EQUIPMENT as readonly string[]).includes(x)),
       cuisine: (CUISINES as readonly string[]).find((c) => c.toLowerCase() === tidy(e.cuisine)) ?? 'Other',
       minutes: r.minutes,
       steps: r.steps,

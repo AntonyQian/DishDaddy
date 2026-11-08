@@ -7,7 +7,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Badge, Button, Icon, Screen, T } from '@/components/ui';
 import { getSubstitutions } from '@/lib/api';
-import { loadStaples } from '@/lib/kitchen';
+import { equipmentLabel, loadStaples } from '@/lib/kitchen';
 import { loadLatestScan } from '@/lib/latestScan';
 import { loadRecipe } from '@/recipes/loadRecipe';
 import { NutritionLine } from '@/recipes/NutritionStrip';
@@ -87,7 +87,7 @@ function RecipeDetail({ recipe, have, missing }: { recipe: Recipe; have: Substit
     if ([...missing].some((m) => norm(m) === item)) swapRows.add(n);
   });
 
-  const tags = [recipe.cuisine !== 'Other' ? recipe.cuisine : null, ...recipe.equipment.map(capital)].filter(Boolean) as string[];
+  const tags = [recipe.cuisine !== 'Other' ? recipe.cuisine : null, ...recipe.equipment.map(equipmentLabel)].filter(Boolean) as string[];
 
   return (
     <View style={styles.fill}>

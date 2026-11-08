@@ -9,6 +9,7 @@ vi.mock('@react-native-async-storage/async-storage', () => ({
 }));
 
 import {
+  ALL_EQUIPMENT, equipmentLabel, normaliseEquipment,
   addStaple, DEFAULT_EQUIPMENT, DEFAULT_STAPLES, loadEquipment, loadStaples, removeStaple, saveEquipment, saveStaples,
   toggleEquipment,
 } from './kitchen';
@@ -41,5 +42,31 @@ describe('Staples and Equipment on the device', () => {
   it('can empty the Staples list without the defaults coming back', async () => {
     await saveStaples([]);
     expect(await loadStaples()).toEqual([]);
+  });
+});
+
+describe('the Equipment list', () => {
+  it('is exactly the twelve appliances we support, in this order', () => {
+    expect(ALL_EQUIPMENT).toEqual([
+      'hob', 'oven', 'grill', 'microwave', 'blender', 'mixer', 'meat grinder',
+      'slow cooker', 'toaster', 'rice cooker', 'air fryer', 'pressure cooker',
+    ]);
+  });
+
+  it('shows friendly names', () => {
+    expect(equipmentLabel('hob')).toBe('Hob / stove');
+    expect(equipmentLabel('mixer')).toBe('Mixers');
+    expect(equipmentLabel('meat grinder')).toBe('Meat grinder');
+    expect(equipmentLabel('air fryer')).toBe('Air fryer');
+  });
+
+  it('turns names saved by older versions into the current ones, once each, and drops the rest', () => {
+    expect(normaliseEquipment(['hand mixer', 'stand mixer', 'food processor', 'oven', 'toaster oven', 'stove']))
+      .toEqual(['hob', 'oven', 'blender', 'mixer']);
+  });
+
+  it('migrates Equipment already stored on the device', async () => {
+    store.set('equipment', JSON.stringify(['hob', 'hand mixer', 'food processor']));
+    expect(await loadEquipment()).toEqual(['hob', 'blender', 'mixer']);
   });
 });
