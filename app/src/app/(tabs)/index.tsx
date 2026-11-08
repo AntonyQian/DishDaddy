@@ -1,7 +1,7 @@
 import type { RecipeMatch } from '@fridge/shared';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { router, useFocusEffect } from 'expo-router';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -10,17 +10,22 @@ import { Badge, Chip, Icon, T } from '@/components/ui';
 import { getHealth, searchRecipes } from '@/lib/api';
 import { MOCK_SCAN, SERVER_URL } from '@/lib/config';
 import { loadEquipment, loadStaples } from '@/lib/kitchen';
-import { loadLatestScan, type LatestScan } from '@/lib/latestScan';
+import { insertIngredient, loadLatestScan, removeIngredient, saveLatestScan, type LatestScan } from '@/lib/latestScan';
 import { categoriesOf, categoryOf, emojiFor, type Category } from '@/lib/pantry';
 import { loadSearchRequest } from '@/recipes/available';
 import { useScan } from '@/scan/ScanContext';
 import { COLORS, FONT, RADIUS } from '@/theme';
 
 /** One confirmed Ingredient as a tile: a picture, its name and group, and a shortcut to Recipes. */
-function PantryTile({ ingredient }: { ingredient: string }) {
+function PantryTile({ ingredient, onRemove }: { ingredient: string; onRemove: () => void }) {
   return (
     <View style={styles.tile}>
-      <Badge label={categoryOf(ingredient)} tone="neutral" />
+      <View style={styles.tileTop}>
+        <Badge label={categoryOf(ingredient)} tone="neutral" />
+        <Pressable accessibilityRole="button" accessibilityLabel={`Remove ${ingredient}`} onPress={onRemove} hitSlop={10} style={styles.tileDelete}>
+          <Icon name="delete-outline" size={20} color={COLORS.outline} />
+        </Pressable>
+      </View>
       <View style={styles.tilePicture}>
         <View style={styles.tileCircle}>
           <T style={{ fontSize: 40 }}>{emojiFor(ingredient)}</T>
@@ -58,16 +63,29 @@ export default function KitchenScreen() {
   const [suggestion, setSuggestion] = useState<RecipeMatch | null>(null);
   const [server, setServer] = useState<'checking' | 'ok' | 'down'>('checking');
   const [category, setCategory] = useState<Category | 'All'>('All');
+  const [undo, setUndo] = useState<{ name: string; index: number } | null>(null);
+
+  // The Undo bar goes away by itself.
+  useEffect(() => {
+    if (!undo) return;
+    const timer = setTimeout(() => setUndo(null), 6000);
+    return () => clearTimeout(timer);
+  }, [undo]);
+
+  const refreshSuggestion = useCallback((count: number) => {
+    if (count === 0) return setSuggestion(null);
+    return loadSearchRequest()
+      .then(searchRecipes)
+      .then((matches) => setSuggestion(matches.find((m) => m.missing.length === 0) ?? null))
+      .catch(() => setSuggestion(null));
+  }, []);
 
   useFocusEffect(
     useCallback(() => {
       loadLatestScan()
         .then((l) => {
           setLatest(l);
-          if (!l || l.ingredients.length === 0) return setSuggestion(null);
-          return loadSearchRequest()
-            .then(searchRecipes)
-            .then((matches) => setSuggestion(matches.find((m) => m.missing.length === 0) ?? null));
+          return refreshSuggestion(l?.ingredients.length ?? 0);
         })
         .catch(() => {
           setLatest(null);
@@ -76,7 +94,7 @@ export default function KitchenScreen() {
       loadStaples().then((s) => setStaples(s.length), () => {});
       loadEquipment().then((e) => setEquipment(e.length), () => {});
       getHealth().then(() => setServer('ok'), () => setServer('down'));
-    }, []),
+    }, [refreshSuggestion]),
   );
 
   const startScan = () => {
@@ -93,11 +111,28 @@ export default function KitchenScreen() {
 
   const ingredients = latest?.ingredients ?? [];
   const groups = categoriesOf(ingredients);
-  const shown = category === 'All' ? ingredients : ingredients.filter((i) => categoryOf(i) === category);
+  // If the last item of the chosen group was just removed, fall back to All.
+  const activeCategory = category === 'All' || groups.some(([c]) => c === category) ? category : 'All';
+  const shown = activeCategory === 'All' ? ingredients : ingredients.filter((i) => categoryOf(i) === activeCategory);
+
+  const change = (next: string[]) => {
+    setLatest((l) => ({ ingredients: next, confirmedAt: l?.confirmedAt ?? new Date().toISOString() }));
+    saveLatestScan(next).then(() => refreshSuggestion(next.length), () => {});
+  };
+  const remove = (name: string) => {
+    setUndo({ name, index: ingredients.indexOf(name) });
+    change(removeIngredient(ingredients, name));
+  };
+  const undoRemove = () => {
+    if (!undo) return;
+    change(insertIngredient(ingredients, undo.name, undo.index));
+    setUndo(null);
+  };
 
   return (
     <SafeAreaView style={styles.screen} edges={['top']}>
       <AppBar title="Hi, Chef!" />
+      <View style={{ flex: 1 }}>
       <ScrollView contentContainerStyle={styles.content}>
         <View style={{ gap: 4 }}>
           <View style={styles.eyebrow}>
@@ -141,9 +176,9 @@ export default function KitchenScreen() {
             <View style={{ gap: 8 }}>
               <T style={styles.sectionTitle}>Categories</T>
               <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingRight: 20 }}>
-                <Chip title="All" count={ingredients.length} selected={category === 'All'} onPress={() => setCategory('All')} />
+                <Chip title="All" count={ingredients.length} selected={activeCategory === 'All'} onPress={() => setCategory('All')} />
                 {groups.map(([c, n]) => (
-                  <Chip key={c} title={c} count={n} selected={category === c} onPress={() => setCategory(c)} />
+                  <Chip key={c} title={c} count={n} selected={activeCategory === c} onPress={() => setCategory(c)} />
                 ))}
               </ScrollView>
             </View>
@@ -152,7 +187,7 @@ export default function KitchenScreen() {
               <T style={styles.sectionTitle}>Fresh in Stock</T>
               <View style={styles.grid}>
                 {shown.map((i) => (
-                  <PantryTile key={i} ingredient={i} />
+                  <PantryTile key={i} ingredient={i} onRemove={() => remove(i)} />
                 ))}
               </View>
             </View>
@@ -191,6 +226,15 @@ export default function KitchenScreen() {
           {MOCK_SCAN ? ' (mock Scans on)' : ''}
         </T>
       </ScrollView>
+      {undo && (
+        <View style={styles.toast}>
+          <T style={styles.toastText} numberOfLines={1}>Removed {undo.name}</T>
+          <Pressable accessibilityRole="button" onPress={undoRemove} hitSlop={10}>
+            <T style={styles.toastUndo}>Undo</T>
+          </Pressable>
+        </View>
+      )}
+      </View>
     </SafeAreaView>
   );
 }
@@ -222,6 +266,15 @@ const styles = StyleSheet.create({
   tile: {
     width: '47%', flexGrow: 1, padding: 12, gap: 8, backgroundColor: COLORS.card, borderRadius: RADIUS.xl, borderWidth: 1, borderColor: COLORS.border,
   },
+  tileTop: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  tileDelete: { padding: 2 },
+  toast: {
+    position: 'absolute', left: 20, right: 20, bottom: 104, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    paddingHorizontal: 20, paddingVertical: 14, backgroundColor: COLORS.inverse, borderRadius: RADIUS.full,
+    shadowColor: '#000', shadowOpacity: 0.2, shadowRadius: 12, shadowOffset: { width: 0, height: 4 }, elevation: 8,
+  },
+  toastText: { flex: 1, color: COLORS.inverseText, fontSize: 14, fontWeight: '600', textTransform: 'capitalize' },
+  toastUndo: { color: '#BFC2FF', fontSize: 14, fontWeight: '800' },
   tilePicture: { alignItems: 'center', paddingVertical: 4 },
   tileCircle: { width: 80, height: 80, borderRadius: RADIUS.lg, backgroundColor: COLORS.surfaceLow, alignItems: 'center', justifyContent: 'center' },
   tileName: { fontSize: 15, fontWeight: '700', textTransform: 'capitalize', paddingHorizontal: 4 },

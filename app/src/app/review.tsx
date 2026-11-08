@@ -4,7 +4,7 @@ import { Alert, Modal, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button, Chip, T, Screen } from '@/components/ui';
-import { saveLatestScan } from '@/lib/latestScan';
+import { addScanToKitchen } from '@/lib/latestScan';
 import { useIngredientList } from '@/lib/useIngredientList';
 import { ItemRow } from '@/review/ItemRow';
 import { BarcodeModal } from '@/review/BarcodeModal';
@@ -48,7 +48,7 @@ function ReviewScreenBody() {
   const done = async () => {
     setSaving(true);
     try {
-      await saveLatestScan(confirmed);
+      await addScanToKitchen(confirmed);
       reset();
       // Home stays under the Recipe Match list, so Back from it lands there.
       router.dismissTo('/');
