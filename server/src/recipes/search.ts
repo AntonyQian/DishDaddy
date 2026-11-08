@@ -1,6 +1,17 @@
 import type { Recipe, RecipeMatch, RecipeSearchRequest } from '@fridge/shared';
 
-const norm = (s: string) => s.trim().toLowerCase();
+export const norm = (s: string) => s.trim().toLowerCase();
+
+/** A Recipe's distinct Ingredient names; a Recipe can list one twice (oil for frying and for dressing). */
+function ingredientNames(r: Recipe): string[] {
+  return [...new Map(r.ingredients.map((i) => [norm(i.ingredient), i.ingredient])).values()];
+}
+
+/** The Recipe's Missing Ingredients: neither among the user's Ingredients nor their Staples. */
+export function missingIngredients(r: Recipe, available: Iterable<string>): string[] {
+  const have = new Set([...available].map(norm));
+  return ingredientNames(r).filter((n) => !have.has(norm(n)));
+}
 
 /**
  * Rank Recipes for a request (ADR 0002): Equipment is a hard filter, Staples
@@ -15,10 +26,9 @@ export function searchRecipes(recipes: readonly Recipe[], req: RecipeSearchReque
   const matches: RecipeMatch[] = [];
   for (const r of recipes) {
     if (!r.equipment.every((e) => equipment.has(norm(e)))) continue;
-    // a Recipe can list an Ingredient twice (e.g. oil for frying and for dressing)
-    const names = [...new Map(r.ingredients.map((i) => [norm(i.ingredient), i.ingredient])).values()];
+    const names = ingredientNames(r);
     if (!names.some((n) => scanned.has(norm(n)))) continue;
-    const missing = names.filter((n) => !available.has(norm(n)));
+    const missing = missingIngredients(r, available);
     matches.push({
       recipeId: r.id,
       name: r.name,
