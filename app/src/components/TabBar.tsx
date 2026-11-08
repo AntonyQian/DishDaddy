@@ -52,7 +52,7 @@ const styles = StyleSheet.create({
   bar: {
     flexDirection: 'row', backgroundColor: COLORS.card, paddingTop: 8, paddingHorizontal: 8,
     borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: COLORS.border,
-    shadowColor: '#1F2937', shadowOpacity: 0.06, shadowRadius: 12, shadowOffset: { width: 0, height: -4 }, elevation: 8,
+    shadowColor: COLORS.text, shadowOpacity: 0.06, shadowRadius: 12, shadowOffset: { width: 0, height: -4 }, elevation: 8,
   },
   item: { flex: 1, alignItems: 'center' },
   pill: { alignItems: 'center', gap: 2, minWidth: 68, paddingVertical: 6, paddingHorizontal: 12, borderRadius: 999 },

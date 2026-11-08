@@ -1,27 +1,31 @@
-// Colours and fonts from the Stitch design system "Campus Fuel & Pantry" (DishDaddy).
+// Colours: "Tomato and cream". Fonts and layout follow the Stitch design system (DishDaddy).
 
 export const COLORS = {
-  background: '#F8F9FA',
+  background: '#FFF8F0',
   card: '#FFFFFF',
-  border: '#E5E7EB',
-  text: '#1F2937',
-  muted: '#6B7280',
-  primary: '#2D6A4F',
+  border: '#EADFD3',
+  text: '#2B2118',
+  muted: '#7A6A5B',
+  primary: '#C8442B',
   onPrimary: '#FFFFFF',
-  primarySoft: '#E8F5E9',
-  sage: '#52B788',
+  onPrimaryMuted: '#FBD9CC',
+  primarySoft: '#FDE8DF',
+  sage: '#F2A65A',
   /** High-protein callouts */
-  tertiary: '#E76F51',
-  proteinSoft: '#FFF7ED',
-  proteinBorder: '#FDBA74',
-  ok: '#16A34A',
-  okSoft: '#F0FDF4',
-  warnText: '#B45309',
-  warnSoft: '#FFFBEB',
-  danger: '#B91C1C',
-  dangerSoft: '#FEE2E2',
-  chipBg: '#F3F4F6',
-  ring: '#D8F3DC',
+  tertiary: '#9A6700',
+  proteinSoft: '#FFF4D6',
+  proteinBorder: '#F0D58A',
+  /** Ready, matched and confirmed: herb green, so a positive state never looks like an error */
+  ok: '#4C7A2E',
+  okSoft: '#EEF6E3',
+  okBorder: '#C5DDA3',
+  warnText: '#A33A22',
+  warnSoft: '#FDE8DF',
+  warnBorder: '#F5C2B0',
+  danger: '#B42318',
+  dangerSoft: '#FEE4E2',
+  chipBg: '#F5EBDD',
+  ring: '#F6D5C8',
 } as const;
 
 // One entry per font file: custom fonts have no weight axis in React Native.

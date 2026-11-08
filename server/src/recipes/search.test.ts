@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Recipe } from '@fridge/shared';
-import { searchRecipes } from './search';
+import { DEFAULT_TOP_N, searchRecipes } from './search';
 
 function recipe(id: string, ingredients: string[], extra: Partial<Recipe> = {}): Recipe {
   return {
@@ -66,6 +66,12 @@ describe('searchRecipes', () => {
     const [m] = searchRecipes([recipe('r', ['egg', 'Egg', 'milk'])], { ingredients: ['egg'], ...none });
     expect(m.missing).toEqual(['milk']);
     expect(m.usedCount).toBe(1);
+  });
+
+  it('returns up to 100 by default, so the app has enough to filter', () => {
+    const many = Array.from({ length: DEFAULT_TOP_N + 20 }, (_, i) => recipe(`r${i}`, ['egg']));
+    expect(searchRecipes(many, { ingredients: ['egg'], ...none })).toHaveLength(DEFAULT_TOP_N);
+    expect(DEFAULT_TOP_N).toBe(100);
   });
 
   it('returns at most the top N', () => {

@@ -18,7 +18,10 @@ export function missingIngredients(r: Recipe, available: Iterable<string>): stri
  * count as available, then fewest Missing Ingredients, then most used.
  * A Recipe that uses none of the scanned Ingredients is not a match.
  */
-export function searchRecipes(recipes: readonly Recipe[], req: RecipeSearchRequest, topN = 20): RecipeMatch[] {
+/** Enough that the app's filters (Ready now, High protein, Under 30 min) each still have Recipes to show. */
+export const DEFAULT_TOP_N = 100;
+
+export function searchRecipes(recipes: readonly Recipe[], req: RecipeSearchRequest, topN = DEFAULT_TOP_N): RecipeMatch[] {
   const scanned = new Set(req.ingredients.map(norm));
   const available = new Set([...scanned, ...req.staples.map(norm)]);
   const equipment = new Set(req.equipment.map(norm));

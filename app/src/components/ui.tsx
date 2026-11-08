@@ -119,15 +119,30 @@ export function Card({ children, style }: { children: ReactNode; style?: StylePr
   return <View style={[styles.card, style]}>{children}</View>;
 }
 
-type Tone = 'solid' | 'ok' | 'protein' | 'warn' | 'neutral';
+type Tone = 'solid' | 'ready' | 'ok' | 'protein' | 'warn' | 'neutral';
 
 const BADGE: Record<Tone, { bg: string; fg: string; border?: string }> = {
   solid: { bg: COLORS.primary, fg: COLORS.onPrimary },
-  ok: { bg: COLORS.okSoft, fg: COLORS.primary, border: '#BBF7D0' },
+  ready: { bg: COLORS.ok, fg: '#FFFFFF' },
+  ok: { bg: COLORS.okSoft, fg: COLORS.ok, border: COLORS.okBorder },
   protein: { bg: COLORS.proteinSoft, fg: COLORS.tertiary, border: COLORS.proteinBorder },
-  warn: { bg: COLORS.warnSoft, fg: COLORS.warnText, border: '#FDE68A' },
+  warn: { bg: COLORS.warnSoft, fg: COLORS.warnText, border: COLORS.warnBorder },
   neutral: { bg: COLORS.chipBg, fg: COLORS.muted },
 };
+
+/** A friendly empty state: what is missing, why, and the one thing to do about it. */
+export function EmptyState({ title, text, action }: { title: string; text: string; action?: { label: string; onPress: () => void } }) {
+  return (
+    <View style={styles.empty}>
+      <View style={styles.emptyIcon}>
+        <Text style={{ fontSize: 34 }}>🥗</Text>
+      </View>
+      <T style={styles.emptyTitle}>{title}</T>
+      <T dim style={styles.emptyText}>{text}</T>
+      {action && <Button title={action.label} onPress={action.onPress} style={{ alignSelf: 'stretch', marginTop: 8 }} />}
+    </View>
+  );
+}
 
 /** A small pill label, e.g. "High protein" or "2 missing". */
 export function Badge({ label, tone = 'neutral', style }: { label: string; tone?: Tone; style?: StyleProp<ViewStyle> }) {
@@ -150,5 +165,9 @@ const styles = StyleSheet.create({
   buttonText: { fontSize: 16, fontFamily: FONT.bodyBold },
   chip: { paddingVertical: 8, paddingHorizontal: 14, borderRadius: 999, borderWidth: 1 },
   card: { backgroundColor: COLORS.card, borderRadius: 16, borderWidth: 1, borderColor: COLORS.border, padding: 16 },
+  empty: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 32, gap: 8 },
+  emptyIcon: { width: 80, height: 80, borderRadius: 40, backgroundColor: COLORS.primarySoft, alignItems: 'center', justifyContent: 'center', marginBottom: 8 },
+  emptyTitle: { fontSize: 22, fontWeight: '700', textAlign: 'center' },
+  emptyText: { textAlign: 'center', fontSize: 15 },
   badge: { alignSelf: 'flex-start', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 999, borderWidth: 1 },
 });

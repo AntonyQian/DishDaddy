@@ -3,11 +3,12 @@ import { useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { FlatList, StyleSheet } from 'react-native';
 
-import { Screen, T } from '@/components/ui';
+import { router } from 'expo-router';
+import { EmptyState, Screen } from '@/components/ui';
 import { loadSavedRecipes } from '@/lib/savedRecipes';
 import { useGoals } from '@/lib/useGoals';
 import { RecipeRow } from '@/recipes/RecipeRow';
-import { Loading } from '@/recipes/StateViews';
+import { RecipeListSkeleton } from '@/recipes/Skeleton';
 
 export default function SavedRecipesScreen() {
   const [saved, setSaved] = useState<Recipe[] | null>(null);
@@ -23,7 +24,7 @@ export default function SavedRecipesScreen() {
   return (
     <Screen title="Saved Recipes" back>
       {saved === null ? (
-        <Loading label="Loading Saved Recipes…" />
+        <RecipeListSkeleton />
       ) : (
         <FlatList
           data={saved}
@@ -42,7 +43,13 @@ export default function SavedRecipesScreen() {
             />
           )}
           contentContainerStyle={styles.list}
-          ListEmptyComponent={<T dim style={styles.empty}>No Saved Recipes yet. Save one from its Recipe page.</T>}
+          ListEmptyComponent={
+            <EmptyState
+              title="No saved recipes yet"
+              text="Tap Save Recipe on any recipe and it will wait for you here, even offline."
+              action={{ label: 'Find recipes', onPress: () => router.push('/recipes') }}
+            />
+          }
         />
       )}
     </Screen>
@@ -50,6 +57,5 @@ export default function SavedRecipesScreen() {
 }
 
 const styles = StyleSheet.create({
-  list: { padding: 16, gap: 16 },
-  empty: { textAlign: 'center', marginTop: 40 },
+  list: { padding: 16, gap: 16, flexGrow: 1 },
 });

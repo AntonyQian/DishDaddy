@@ -43,6 +43,6 @@ const styles = StyleSheet.create({
   unit: { fontFamily: FONT.body, fontSize: 14 },
   divider: { width: 1, height: 18, backgroundColor: COLORS.border },
   per: { fontSize: 12, marginLeft: 'auto' },
-  goal: { paddingVertical: 8, paddingHorizontal: 12, borderRadius: 12, backgroundColor: COLORS.primarySoft },
-  goalText: { fontFamily: FONT.bodySemi, fontSize: 13, color: COLORS.primary },
+  goal: { paddingVertical: 8, paddingHorizontal: 12, borderRadius: 12, backgroundColor: COLORS.okSoft },
+  goalText: { fontFamily: FONT.bodySemi, fontSize: 13, color: COLORS.ok },
 });

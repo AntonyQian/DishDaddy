@@ -4,13 +4,14 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { Badge, T } from '@/components/ui';
 import { COLORS, FONT } from '@/theme';
+import { IngredientBar } from './IngredientBar';
 import { NutritionStrip } from './NutritionStrip';
 
 /**
  * One Recipe in a list (Recipe Matches, Saved Recipes) as a photo card; tapping it opens the Recipe.
  * `missing` is only given for Recipe Matches, where it says whether the user can cook it now.
  */
-export function RecipeRow({ id, name, minutes, cuisine, imageUrl, calories, proteinGrams, highProtein, missing, goalProtein }: {
+export function RecipeRow({ id, name, minutes, cuisine, imageUrl, calories, proteinGrams, highProtein, missing, have, goalProtein }: {
   id: string;
   name: string;
   minutes: number;
@@ -20,6 +21,8 @@ export function RecipeRow({ id, name, minutes, cuisine, imageUrl, calories, prot
   proteinGrams?: number;
   highProtein?: boolean;
   missing?: string[];
+  /** Ingredients the user has, for Recipe Matches. */
+  have?: number;
   goalProtein?: number;
 }) {
   return (
@@ -32,7 +35,7 @@ export function RecipeRow({ id, name, minutes, cuisine, imageUrl, calories, prot
         {missing && (
           <Badge
             style={styles.topLeft}
-            tone={missing.length === 0 ? 'solid' : 'warn'}
+            tone={missing.length === 0 ? 'ready' : 'warn'}
             label={missing.length === 0 ? 'Nothing missing' : `${missing.length} missing`}
           />
         )}
@@ -45,6 +48,7 @@ export function RecipeRow({ id, name, minutes, cuisine, imageUrl, calories, prot
       <View style={styles.body}>
         <T style={styles.name}>{name}</T>
         <T dim style={styles.cuisine}>{cuisine === 'Other' ? 'Everyday cooking' : `${cuisine} cooking`}</T>
+        {missing && have !== undefined && <IngredientBar have={have} total={have + missing.length} />}
         <NutritionStrip calories={calories} proteinGrams={proteinGrams} goalProtein={goalProtein} />
         {!!missing?.length && (
           <T dim style={styles.missing}>
@@ -65,7 +69,7 @@ const styles = StyleSheet.create({
   topLeft: { position: 'absolute', top: 12, left: 12 },
   topRight: { position: 'absolute', top: 12, right: 12 },
   time: {
-    position: 'absolute', right: 12, bottom: 12, backgroundColor: 'rgba(31,41,55,0.78)',
+    position: 'absolute', right: 12, bottom: 12, backgroundColor: 'rgba(43,33,24,0.78)',
     paddingHorizontal: 10, paddingVertical: 5, borderRadius: 999,
   },
   timeText: { color: 'white', fontFamily: FONT.bodySemi, fontSize: 12 },

@@ -90,7 +90,7 @@ const styles = StyleSheet.create({
   container: { padding: 16, gap: 16 },
   hero: { backgroundColor: COLORS.primary, borderRadius: 20, padding: 20, gap: 12 },
   heroTitle: { color: COLORS.onPrimary, fontSize: 26, fontWeight: '700', lineHeight: 32 },
-  heroText: { color: '#CFE9DA', fontSize: 15 },
+  heroText: { color: COLORS.onPrimaryMuted, fontSize: 15 },
   latest: { gap: 10 },
   heading: { fontSize: 18, fontWeight: '700' },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
