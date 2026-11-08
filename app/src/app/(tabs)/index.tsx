@@ -1,5 +1,6 @@
 import type { RecipeMatch } from '@fridge/shared';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { Image } from 'expo-image';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, View } from 'react-native';
@@ -9,6 +10,8 @@ import { AppBar } from '@/components/AppBar';
 import { Badge, Chip, Icon, T } from '@/components/ui';
 import { getHealth, searchRecipes } from '@/lib/api';
 import { MOCK_SCAN, SERVER_URL } from '@/lib/config';
+import { coverCrop, type ItemPhoto, type ItemPhotos } from '@/lib/itemPhotos';
+import { loadItemPhotos, saveItemPhotos, sweepPhotoFiles } from '@/lib/itemPhotoStore';
 import { loadEquipment, loadStaples } from '@/lib/kitchen';
 import { insertIngredient, loadLatestScan, removeIngredient, saveLatestScan, type LatestScan } from '@/lib/latestScan';
 import { categoriesOf, categoryOf, emojiFor, type Category } from '@/lib/pantry';
@@ -17,7 +20,19 @@ import { useScan } from '@/scan/ScanContext';
 import { COLORS, FONT, RADIUS } from '@/theme';
 
 /** One confirmed Ingredient as a tile: a picture, its name and group, and a shortcut to Recipes. */
-function PantryTile({ ingredient, onRemove }: { ingredient: string; onRemove: () => void }) {
+const PICTURE = 80;
+
+/** The middle of the Ingredient's box in its Scan photo, filling the square. */
+function ItemPhotoThumb({ photo }: { photo: ItemPhoto }) {
+  const c = coverCrop(photo, PICTURE);
+  return (
+    <View style={styles.tileCircle}>
+      <Image source={{ uri: photo.uri }} contentFit="fill" style={{ position: 'absolute', width: c.width, height: c.height, left: c.left, top: c.top }} />
+    </View>
+  );
+}
+
+function PantryTile({ ingredient, photo, onRemove }: { ingredient: string; photo?: ItemPhoto; onRemove: () => void }) {
   return (
     <View style={styles.tile}>
       <View style={styles.tileTop}>
@@ -27,9 +42,13 @@ function PantryTile({ ingredient, onRemove }: { ingredient: string; onRemove: ()
         </Pressable>
       </View>
       <View style={styles.tilePicture}>
-        <View style={styles.tileCircle}>
-          <T style={{ fontSize: 40 }}>{emojiFor(ingredient)}</T>
-        </View>
+        {photo ? (
+          <ItemPhotoThumb photo={photo} />
+        ) : (
+          <View style={styles.tileCircle}>
+            <T style={{ fontSize: 40 }}>{emojiFor(ingredient)}</T>
+          </View>
+        )}
       </View>
       <T style={styles.tileName} numberOfLines={2}>{ingredient}</T>
       <Pressable accessibilityRole="button" onPress={() => router.navigate('/recipes')} style={styles.tileButton}>
@@ -63,12 +82,17 @@ export default function KitchenScreen() {
   const [suggestion, setSuggestion] = useState<RecipeMatch | null>(null);
   const [server, setServer] = useState<'checking' | 'ok' | 'down'>('checking');
   const [category, setCategory] = useState<Category | 'All'>('All');
-  const [undo, setUndo] = useState<{ name: string; index: number } | null>(null);
+  const [photos, setPhotos] = useState<ItemPhotos>({});
+  const [undo, setUndo] = useState<{ name: string; index: number; photo?: ItemPhoto } | null>(null);
 
   // The Undo bar goes away by itself.
   useEffect(() => {
     if (!undo) return;
-    const timer = setTimeout(() => setUndo(null), 6000);
+    const timer = setTimeout(() => {
+      setUndo(null);
+      // Too late to undo, so the removed item's photo file can go.
+      loadItemPhotos().then(sweepPhotoFiles, () => {});
+    }, 6000);
     return () => clearTimeout(timer);
   }, [undo]);
 
@@ -91,6 +115,7 @@ export default function KitchenScreen() {
           setLatest(null);
           setSuggestion(null);
         });
+      loadItemPhotos().then(setPhotos, () => {});
       loadStaples().then((s) => setStaples(s.length), () => {});
       loadEquipment().then((e) => setEquipment(e.length), () => {});
       getHealth().then(() => setServer('ok'), () => setServer('down'));
@@ -119,13 +144,20 @@ export default function KitchenScreen() {
     setLatest((l) => ({ ingredients: next, confirmedAt: l?.confirmedAt ?? new Date().toISOString() }));
     saveLatestScan(next).then(() => refreshSuggestion(next.length), () => {});
   };
+  const savePhotos = (next: ItemPhotos) => {
+    setPhotos(next);
+    saveItemPhotos(next).catch(() => {});
+  };
   const remove = (name: string) => {
-    setUndo({ name, index: ingredients.indexOf(name) });
+    setUndo({ name, index: ingredients.indexOf(name), photo: photos[name] });
     change(removeIngredient(ingredients, name));
+    const { [name]: _gone, ...rest } = photos;
+    savePhotos(rest);
   };
   const undoRemove = () => {
     if (!undo) return;
     change(insertIngredient(ingredients, undo.name, undo.index));
+    if (undo.photo) savePhotos({ ...photos, [undo.name]: undo.photo });
     setUndo(null);
   };
 
@@ -187,7 +219,7 @@ export default function KitchenScreen() {
               <T style={styles.sectionTitle}>Fresh in Stock</T>
               <View style={styles.grid}>
                 {shown.map((i) => (
-                  <PantryTile key={i} ingredient={i} onRemove={() => remove(i)} />
+                  <PantryTile key={i} ingredient={i} photo={photos[i]} onRemove={() => remove(i)} />
                 ))}
               </View>
             </View>
@@ -276,7 +308,7 @@ const styles = StyleSheet.create({
   toastText: { flex: 1, color: COLORS.inverseText, fontSize: 14, fontWeight: '600', textTransform: 'capitalize' },
   toastUndo: { color: '#BFC2FF', fontSize: 14, fontWeight: '800' },
   tilePicture: { alignItems: 'center', paddingVertical: 4 },
-  tileCircle: { width: 80, height: 80, borderRadius: RADIUS.lg, backgroundColor: COLORS.surfaceLow, alignItems: 'center', justifyContent: 'center' },
+  tileCircle: { width: PICTURE, height: PICTURE, borderRadius: RADIUS.lg, backgroundColor: COLORS.surfaceLow, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
   tileName: { fontSize: 15, fontWeight: '700', textTransform: 'capitalize', paddingHorizontal: 4 },
   tileButton: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4, backgroundColor: COLORS.surfaceLow, borderRadius: RADIUS.full, paddingVertical: 8 },
   tileButtonText: { fontSize: 11, fontFamily: FONT.semi },
