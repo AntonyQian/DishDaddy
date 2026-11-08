@@ -2,8 +2,23 @@ import { describe, expect, it } from 'vitest';
 import { FIXTURE_INGREDIENTS } from '@fridge/shared';
 import { ingredientList, loadRecipes } from './collection';
 
-describe('fixture collection', () => {
+const FIXTURE = new URL('./fixtures/recipes.fixture.json', import.meta.url);
+
+describe('real collection (data/recipes.json)', () => {
   const recipes = loadRecipes();
+
+  it('loads, with enough recipes to be useful', () => {
+    expect(recipes.length).toBeGreaterThanOrEqual(1000);
+  });
+
+  it('only uses known Equipment', () => {
+    const known = new Set(['oven', 'hob', 'microwave', 'air fryer', 'blender', 'food processor', 'slow cooker', 'pressure cooker', 'grill', 'stand mixer', 'hand mixer', 'rice cooker', 'toaster']);
+    expect(recipes.flatMap((r) => r.equipment).filter((e) => !known.has(e))).toEqual([]);
+  });
+});
+
+describe('fixture collection', () => {
+  const recipes = loadRecipes(FIXTURE);
 
   it('loads valid recipes', () => {
     expect(recipes.length).toBeGreaterThanOrEqual(10);
