@@ -40,7 +40,7 @@ const RESPONSE_SCHEMA = {
 } as const;
 
 /** Gemini answers 503/429 under load; retry those a few times with backoff. */
-async function withRetry<T>(call: () => Promise<T>, attempts = 4): Promise<T> {
+export async function withRetry<T>(call: () => Promise<T>, attempts = 4): Promise<T> {
   for (let attempt = 1; ; attempt++) {
     try {
       return await call();

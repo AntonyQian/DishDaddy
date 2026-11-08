@@ -15,17 +15,20 @@ export interface ProviderEnv {
   GEMINI_MODEL?: string;
 }
 
-export interface SelectedModel {
+/** The chosen LLM provider and its credentials; shared by detection and Substitutions. */
+export interface ProviderChoice {
   provider: ProviderName;
-  model: PhotoModel;
+  apiKey: string;
+  /** Undefined means the client's default model. */
+  model?: string;
 }
 
 /**
- * Picks the detection model from the environment. DETECTION_PROVIDER wins when
- * set; otherwise the first provider with a key is used: Anthropic, OpenAI, Gemini. Returns
- * undefined when the chosen provider has no key, so /scan can answer 503.
+ * Picks the LLM provider from the environment. DETECTION_PROVIDER wins when
+ * set; otherwise the first provider with a key is used: Anthropic, OpenAI, Gemini.
+ * Returns undefined when the chosen provider has no key.
  */
-export function selectPhotoModel(env: ProviderEnv): SelectedModel | undefined {
+export function chooseProvider(env: ProviderEnv): ProviderChoice | undefined {
   const requested = env.DETECTION_PROVIDER?.trim().toLowerCase();
   if (requested && requested !== 'anthropic' && requested !== 'openai' && requested !== 'gemini') {
     throw new Error(`DETECTION_PROVIDER must be "anthropic", "openai" or "gemini", got "${env.DETECTION_PROVIDER}"`);
@@ -34,24 +37,23 @@ export function selectPhotoModel(env: ProviderEnv): SelectedModel | undefined {
     (requested as ProviderName | undefined) ||
     (env.ANTHROPIC_API_KEY ? 'anthropic' : env.OPENAI_API_KEY ? 'openai' : 'gemini');
 
-  if (provider === 'anthropic') {
-    if (!env.ANTHROPIC_API_KEY) return undefined;
-    return {
-      provider,
-      model: createAnthropicModel({ apiKey: env.ANTHROPIC_API_KEY, model: env.ANTHROPIC_MODEL || undefined }),
-    };
-  }
+  const [apiKey, model] =
+    provider === 'anthropic' ? [env.ANTHROPIC_API_KEY, env.ANTHROPIC_MODEL]
+    : provider === 'openai' ? [env.OPENAI_API_KEY, env.OPENAI_MODEL]
+    : [env.GEMINI_API_KEY, env.GEMINI_MODEL];
+  if (!apiKey) return undefined;
+  return { provider, apiKey, model: model || undefined };
+}
 
-  if (provider === 'openai') {
-    if (!env.OPENAI_API_KEY) return undefined;
-    return {
-      provider,
-      model: createOpenAIModel({ apiKey: env.OPENAI_API_KEY, model: env.OPENAI_MODEL || undefined }),
-    };
-  }
-  if (!env.GEMINI_API_KEY) return undefined;
-  return {
-    provider,
-    model: createGeminiModel({ apiKey: env.GEMINI_API_KEY, model: env.GEMINI_MODEL || undefined }),
-  };
+export interface SelectedModel {
+  provider: ProviderName;
+  model: PhotoModel;
+}
+
+/** The detection model for the chosen provider, or undefined so /scan can answer 503. */
+export function selectPhotoModel(env: ProviderEnv): SelectedModel | undefined {
+  const choice = chooseProvider(env);
+  if (!choice) return undefined;
+  const create = { anthropic: createAnthropicModel, openai: createOpenAIModel, gemini: createGeminiModel }[choice.provider];
+  return { provider: choice.provider, model: create({ apiKey: choice.apiKey, model: choice.model }) };
 }

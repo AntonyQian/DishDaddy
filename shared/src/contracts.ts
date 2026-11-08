@@ -71,6 +71,28 @@ export interface Recipe {
   highProtein: boolean;
 }
 
+/** Body of POST /recipes/:id/substitutions: what the user has. */
+export interface SubstitutionRequest {
+  /** Confirmed Ingredients from Review. */
+  ingredients: string[];
+  staples: string[];
+}
+
+/** A proposed swap for one Missing Ingredient; applies only once the user accepts it. */
+export interface Substitution {
+  /** The Missing Ingredient this replaces, as the Recipe names it. */
+  missing: string;
+  /** What to use instead, all from the user's Ingredients and Staples ("milk", "lemon"). */
+  use: string[];
+  /** Short how-to ("1 tbsp lemon juice per 250 ml milk, rest 5 min"). */
+  note?: string;
+}
+
+/** Response of POST /recipes/:id/substitutions. Empty when nothing is missing or no swap works. */
+export interface SubstitutionsResponse {
+  substitutions: Substitution[];
+}
+
 export interface IngredientsResponse {
   ingredients: string[];
 }
