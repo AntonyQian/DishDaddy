@@ -5,6 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button, Chip, T, Screen } from '@/components/ui';
 import { addScanToKitchen } from '@/lib/latestScan';
+import { goBack } from '@/lib/navigation';
 import { useIngredientList } from '@/lib/useIngredientList';
 import { ItemRow } from '@/review/ItemRow';
 import { BarcodeModal } from '@/review/BarcodeModal';
@@ -35,7 +36,7 @@ function ReviewScreenBody() {
     return (
       <View style={styles.empty}>
         <T>No Scan to review.</T>
-        <Button title="Back" onPress={() => router.back()} />
+        <Button title="Back" onPress={() => goBack()} />
       </View>
     );
   }

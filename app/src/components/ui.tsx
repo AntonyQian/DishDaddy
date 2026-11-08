@@ -1,5 +1,4 @@
 import { MaterialIcons } from '@expo/vector-icons';
-import { router } from 'expo-router';
 import type { ComponentProps, ReactNode } from 'react';
 import {
   ActivityIndicator, Pressable, StyleSheet, Text, View,
@@ -7,6 +6,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { goBack } from '@/lib/navigation';
 import { COLORS, FONT, RADIUS } from '@/theme';
 
 // Kept under their old names: other screens import these.
@@ -112,7 +112,7 @@ export function Screen({ title, eyebrow, back, right, children }: {
     <SafeAreaView style={{ flex: 1, backgroundColor: COLORS.background }} edges={['top']}>
       <View style={styles.header}>
         <View style={styles.headerSide}>
-          {back && <RoundButton icon="arrow-back" label="Back" onPress={() => router.back()} />}
+          {back && <RoundButton icon="arrow-back" label="Back" onPress={() => goBack()} />}
         </View>
         <View style={styles.headerCenter}>
           {!!eyebrow && <Text style={styles.eyebrow}>{eyebrow}</Text>}

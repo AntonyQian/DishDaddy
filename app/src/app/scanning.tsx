@@ -1,4 +1,5 @@
 import { router } from 'expo-router';
+import { goBack } from '@/lib/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 
@@ -37,7 +38,7 @@ function ScanningScreenBody() {
 
   useEffect(() => {
     if (photos.length === 0) {
-      router.back();
+      goBack('/scan');
       return;
     }
     send();
@@ -64,7 +65,7 @@ function ScanningScreenBody() {
           Your {photos.length} photo{photos.length > 1 ? 's are' : ' is'} kept.
         </T>
         <Button title="Retry" onPress={retry} />
-        <Button title="Back to photos" variant="secondary" onPress={() => router.back()} />
+        <Button title="Back to photos" variant="secondary" onPress={() => goBack('/scan')} />
       </View>
     );
   }
