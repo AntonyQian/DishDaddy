@@ -1,5 +1,5 @@
 # Render free web service for the server (T0). Create it from this Blueprint
-# in the Render dashboard, then set GEMINI_API_KEY there.
+# in the Render dashboard, then set OPENAI_API_KEY (or GEMINI_API_KEY) there.
 services:
   - type: web
     name: fridge-server
@@ -9,5 +9,9 @@ services:
     startCommand: npm run start --workspace server
     healthCheckPath: /health
     envVars:
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
       - key: GEMINI_API_KEY
         sync: false

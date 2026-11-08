@@ -1,6 +1,6 @@
-# Multimodal LLM (Gemini Flash) for ingredient detection, with barcode override
+# Multimodal LLM for ingredient detection (Claude Haiku by default), with barcode override
 
-Ingredient identification is the product's top priority, so we detect ingredients by sending Scan photos to Gemini Flash with a strict JSON schema (name, confidence, bounding box, visible label text). When an item has a barcode, the Open Food Facts lookup replaces the model's guess. Every Scan goes through a user Review step, because no detector handles opaque containers or look-alikes (leek vs spring onion) reliably.
+Ingredient identification is the product's top priority, so we detect ingredients by sending Scan photos to a multimodal LLM with a strict JSON schema (name, confidence, bounding box, visible label text). When an item has a barcode, the Open Food Facts lookup replaces the model's guess. Every Scan goes through a user Review step, because no detector handles opaque containers or look-alikes (leek vs spring onion) reliably.
 
 ## Considered Options
 
@@ -17,3 +17,14 @@ Ingredient identification is the product's top priority, so we detect ingredient
   - Unidentified Items count as acceptable, not as failures.
 - Accuracy beats speed: photos are sent at high resolution and in parallel, within a budget of about 10 s for a 3-photo Scan.
 - A second model is tried on uncertain items only if the bar is not met.
+
+## Update: Claude Haiku is the default provider
+
+The detector sits behind `PhotoModel` with three providers: Anthropic, OpenAI and Gemini (`server/src/detection/`). The first provider with an API key is used, in that order, or `DETECTION_PROVIDER` forces one. Anthropic's `claude-haiku-5-5` is the default because:
+
+- On the nine-Scan test set it found 93.3% of items (the first four Scans: 93.9%, the same as Gemini).
+- A Scan photo takes 3-7 s, against 10-12 s on Gemini, and a real 3-photo `/scan` took 8.9 s, inside the 10 s budget.
+- Gemini's free tier allows 20 requests per day per model (every photo is one request), which would stop a live demo. Both Gemini and OpenAI also had outages or empty accounts during testing.
+- It costs a fraction of a cent per photo.
+
+Gemini stays available as a fallback. Results and the open accuracy gap are in [docs/eval-results.md](../eval-results.md).

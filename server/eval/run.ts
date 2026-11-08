@@ -4,7 +4,7 @@ import { readdir, readFile } from 'node:fs/promises';
 import { extname, join } from 'node:path';
 import { FIXTURE_INGREDIENTS } from '@fridge/shared';
 import { createDetectIngredients } from '../src/detection/detectIngredients';
-import { createGeminiModel } from '../src/detection/gemini';
+import { selectPhotoModel } from '../src/detection/provider';
 import { createNormaliser } from '../src/detection/normalise';
 import type { Photo, PhotoModel } from '../src/detection/types';
 import { BAR, scoreScan, summarise, type ScanScore } from './score';
@@ -39,17 +39,18 @@ async function loadScans() {
 }
 
 async function main() {
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) throw new Error('Set GEMINI_API_KEY in server/.env');
+  const selected = selectPhotoModel(process.env);
+  if (!selected) throw new Error('Set ANTHROPIC_API_KEY, OPENAI_API_KEY or GEMINI_API_KEY in server/.env');
+  console.log(`Provider: ${selected.provider}`);
 
   const vocabulary = FIXTURE_INGREDIENTS;
-  const gemini = createGeminiModel({ apiKey, model: process.env.GEMINI_MODEL });
+  const detector = selected.model;
   // Names off the ingredient list become Unidentified Items, which score as
   // acceptable. Record them so a confidently named phantom can't hide there.
   let offListNames: string[] = [];
   const isOnList = createNormaliser(vocabulary);
   const model: PhotoModel = async (photo, vocab) => {
-    const items = await gemini(photo, vocab);
+    const items = await detector(photo, vocab);
     offListNames.push(...items.flatMap((i) => (i.name && !isOnList(i.name) ? [i.name] : [])));
     return items;
   };

@@ -2,13 +2,14 @@ import { serve } from '@hono/node-server';
 import { FIXTURE_INGREDIENTS } from '@fridge/shared';
 import { createApp } from './app';
 import { createDetectIngredients } from './detection/detectIngredients';
-import { createGeminiModel } from './detection/gemini';
+import { selectPhotoModel } from './detection/provider';
 import { ingredientList, loadRecipes } from './recipes/collection';
 
 const port = Number(process.env.PORT ?? 8787);
-const apiKey = process.env.GEMINI_API_KEY;
+const selected = selectPhotoModel(process.env);
 
-if (!apiKey) console.warn('GEMINI_API_KEY is not set: /scan will answer 503');
+if (selected) console.log(`detection provider: ${selected.provider}`);
+else console.warn('No API key for the detection provider (OPENAI_API_KEY or GEMINI_API_KEY): /scan will answer 503');
 
 const recipes = loadRecipes();
 
@@ -16,11 +17,8 @@ const recipes = loadRecipes();
 // list stays in until the full T8 collection lands, because the placeholder
 // collection lacks hard cases (greek yogurt, coriander, ketchup).
 const vocabulary = [...new Set([...FIXTURE_INGREDIENTS, ...ingredientList(recipes)])].sort();
-const detectIngredients = apiKey
-  ? createDetectIngredients({
-      model: createGeminiModel({ apiKey, model: process.env.GEMINI_MODEL }),
-      vocabulary,
-    })
+const detectIngredients = selected
+  ? createDetectIngredients({ model: selected.model, vocabulary })
   : undefined;
 
 serve({ fetch: createApp({ detectIngredients, recipes }).fetch, port, hostname: '0.0.0.0' }, (info) => {

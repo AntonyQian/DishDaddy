@@ -3,6 +3,15 @@ import { LOW_CONFIDENCE, type Detection, type ScanResult } from '@fridge/shared'
 // The accuracy bar from ADR 0001, measured before Review.
 export const BAR = { foundRate: 0.9, madeUp: 0 };
 
+// Pantry-style items the user is expected to record as Staples. They are not
+// worth scoring: detecting one is not a made-up item, and truth.json omits them.
+export const STAPLE_LIKE = new Set([
+  'butter', 'mayonnaise', 'ketchup', 'mustard', 'dijon mustard', 'soy sauce',
+  'fish sauce', 'salsa', 'pesto', 'jam', 'honey', 'vinegar', 'olive oil',
+  'vegetable oil', 'cream cheese', 'soured cream', 'cream', 'parmesan',
+  'tortilla', 'hummus', 'pickles',
+]);
+
 export interface ScanScore {
   expected: number;
   /** Ingredients named correctly, or offered among a Detection's alternatives. */
@@ -46,7 +55,7 @@ export function scoreScan(truth: string[], result: ScanResult, ms: number): Scan
   match((d, i) => offered(d).includes(i));
 
   const madeUp = result.detections
-    .filter((d) => d.ingredient !== null && !offered(d).some((o) => expected.includes(o)))
+    .filter((d) => d.ingredient !== null && !STAPLE_LIKE.has(d.ingredient) && !offered(d).some((o) => expected.includes(o)))
     .map((d) => d.ingredient!);
 
   return {

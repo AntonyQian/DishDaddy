@@ -13,7 +13,7 @@ const MAX_PHOTO_BYTES = 15 * 1024 * 1024;
 const isStrings = (v: unknown): v is string[] => Array.isArray(v) && v.every((s) => typeof s === 'string');
 
 export interface AppDeps {
-  /** Missing when no GEMINI_API_KEY is set; /scan then answers 503. */
+  /** Missing when no detection API key is set; /scan then answers 503. */
   detectIngredients?: DetectIngredients;
   /** The recipe collection; defaults to server/data/recipes.json. */
   recipes?: readonly Recipe[];

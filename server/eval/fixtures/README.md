@@ -19,4 +19,4 @@ fixtures/
 - Cover the hard cases: leek and spring onion, parsley and coriander, Greek yogurt, a labelled jar, a tupperware of leftovers, butter, plant milk. Shoot about 5 Scans of 2–3 photos under real fridge lighting, with clutter and items hiding each other.
 - Keep photos under about 4 MB (phone default JPEG is fine).
 
-Run `npm run eval --workspace server` (needs `GEMINI_API_KEY` in `server/.env`).
+Run `npm run eval --workspace server` (needs `ANTHROPIC_API_KEY`, `OPENAI_API_KEY` or `GEMINI_API_KEY` in `server/.env`).
