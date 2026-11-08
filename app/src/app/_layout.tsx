@@ -1,12 +1,39 @@
-import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from 'expo-router';
-import { useColorScheme } from 'react-native';
+import {
+  Epilogue_600SemiBold, Epilogue_700Bold,
+} from '@expo-google-fonts/epilogue';
+import {
+  Manrope_400Regular, Manrope_500Medium, Manrope_600SemiBold, Manrope_700Bold, useFonts,
+} from '@expo-google-fonts/manrope';
+import { DefaultTheme, Stack, ThemeProvider } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
 
 import { ScanProvider } from '@/scan/ScanContext';
+import { COLORS } from '@/theme';
+
+// The design is light only, so screens that read the navigation theme get these colours too.
+const THEME = {
+  ...DefaultTheme,
+  colors: {
+    ...DefaultTheme.colors,
+    primary: COLORS.primary,
+    background: COLORS.background,
+    card: COLORS.card,
+    text: COLORS.text,
+    border: COLORS.border,
+  },
+};
 
 export default function RootLayout() {
-  const colorScheme = useColorScheme();
+  const [loaded, error] = useFonts({
+    Epilogue_600SemiBold, Epilogue_700Bold,
+    Manrope_400Regular, Manrope_500Medium, Manrope_600SemiBold, Manrope_700Bold,
+  });
+  // Wait for the fonts, but never get stuck on a font that fails to load.
+  if (!loaded && !error) return null;
+
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+    <ThemeProvider value={THEME}>
+      <StatusBar style="dark" />
       <ScanProvider>
         <Stack screenOptions={{ headerShown: false }}>
           <Stack.Screen name="index" />

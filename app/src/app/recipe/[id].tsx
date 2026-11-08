@@ -1,13 +1,15 @@
 import type { Recipe, SubstitutionRequest } from '@fridge/shared';
+import { Image } from 'expo-image';
 import { useLocalSearchParams } from 'expo-router';
 import { useState, type ReactNode } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
 
-import { Button, CONFIRMED, Screen, T, WARN } from '@/components/ui';
+import { Badge, Button, Card, CONFIRMED, Screen, T, WARN } from '@/components/ui';
 import { getRecipe, getSubstitutions } from '@/lib/api';
 import { loadStaples } from '@/lib/kitchen';
 import { loadLatestScan } from '@/lib/latestScan';
 import { findSavedRecipe } from '@/lib/savedRecipes';
+import { NutritionStrip } from '@/recipes/NutritionStrip';
 import { missingIngredients, norm } from '@/recipes/recipeMatch';
 import { SaveToggle } from '@/recipes/SaveToggle';
 import { Failed, Loading } from '@/recipes/StateViews';
@@ -16,6 +18,7 @@ import {
   type Swap, type SwapState,
 } from '@/recipes/substitutions';
 import { useAsync } from '@/recipes/useAsync';
+import { COLORS, FONT } from '@/theme';
 
 /** The Recipe from the server, or its saved copy when the server can't be reached, so Saved Recipes open offline. */
 async function loadRecipe(id: string): Promise<Recipe> {
@@ -38,10 +41,10 @@ type SuggestState = { status: 'idle' } | { status: 'loading' } | { status: 'erro
 
 function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <View style={styles.section}>
+    <Card style={styles.section}>
       <T style={styles.heading}>{title}</T>
       {children}
-    </View>
+    </Card>
   );
 }
 
@@ -92,12 +95,17 @@ function RecipeDetail({ recipe, have, missing }: { recipe: Recipe; have: Substit
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <T style={styles.title}>{recipe.name}</T>
-      <T dim>
-        {recipe.cuisine} · {recipe.minutes} min · serves {recipe.servings}
-        {recipe.highProtein ? ' · high protein' : ''}
-      </T>
-      <SaveToggle recipe={recipe} />
+      {!!recipe.imageUrl && <Image source={{ uri: recipe.imageUrl }} style={styles.hero} contentFit="cover" transition={150} />}
+      <View style={styles.pad}>
+        <T style={styles.title}>{recipe.name}</T>
+        <View style={styles.badges}>
+          <Badge tone="neutral" label={`⏱ ${recipe.minutes} min`} />
+          <Badge tone="neutral" label={`Serves ${recipe.servings}`} />
+          <Badge tone="neutral" label={recipe.cuisine === 'Other' ? 'Everyday cooking' : recipe.cuisine} />
+          {recipe.highProtein && <Badge tone="protein" label="High protein" />}
+        </View>
+        <NutritionStrip calories={recipe.calories} proteinGrams={recipe.proteinGrams} />
+        <SaveToggle recipe={recipe} />
 
       <Section title={stillMissing.size ? `Ingredients (${stillMissing.size} missing)` : 'Ingredients'}>
         {recipe.ingredients.map((i, n) => {
@@ -107,7 +115,7 @@ function RecipeDetail({ recipe, have, missing }: { recipe: Recipe; have: Substit
             <View key={`${i.ingredient}-${n}`} style={styles.ingredientBlock}>
               <View style={[styles.ingredient, isMissing && styles.missingRow]}>
                 <T style={[styles.ingredientName, isMissing && styles.missingText]}>
-                  {i.ingredient}{isMissing ? ' (missing)' : ''}
+                  {i.original ?? i.ingredient}{isMissing ? ' (missing)' : ''}
                 </T>
                 {!!i.quantity && <T dim>{i.quantity}</T>}
               </View>
@@ -148,11 +156,12 @@ function RecipeDetail({ recipe, have, missing }: { recipe: Recipe; have: Substit
       <Section title="Steps">
         {recipe.steps.map((s, n) => (
           <View key={n} style={styles.step}>
-            <T style={styles.stepNo}>{n + 1}.</T>
+            <View style={styles.stepNo}><T style={styles.stepNoText}>{n + 1}</T></View>
             <T style={{ flex: 1 }}>{s}</T>
           </View>
         ))}
       </Section>
+      </View>
     </ScrollView>
   );
 }
@@ -173,9 +182,12 @@ export default function RecipeScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { padding: 20, gap: 8, paddingBottom: 40 },
-  title: { fontSize: 22, fontWeight: '700' },
-  section: { marginTop: 16, gap: 6 },
+  container: { paddingBottom: 40 },
+  hero: { width: '100%', height: 240, backgroundColor: COLORS.primarySoft },
+  pad: { padding: 16, gap: 12 },
+  badges: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  title: { fontSize: 26, fontWeight: '700', lineHeight: 32 },
+  section: { marginTop: 4, gap: 8 },
   heading: { fontSize: 18, fontWeight: '700' },
   ingredientBlock: { gap: 4 },
   ingredient: { flexDirection: 'row', justifyContent: 'space-between', gap: 12, paddingVertical: 4, paddingHorizontal: 8, borderRadius: 8 },
@@ -189,6 +201,7 @@ const styles = StyleSheet.create({
   swapButton: { flex: 1 },
   inline: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   suggestError: { gap: 6 },
-  step: { flexDirection: 'row', gap: 8 },
-  stepNo: { fontWeight: '700', width: 24 },
+  step: { flexDirection: 'row', gap: 10, alignItems: 'flex-start' },
+  stepNo: { width: 26, height: 26, borderRadius: 13, backgroundColor: COLORS.primarySoft, alignItems: 'center', justifyContent: 'center' },
+  stepNoText: { color: COLORS.primary, fontFamily: FONT.bodyBold, fontSize: 13 },
 });

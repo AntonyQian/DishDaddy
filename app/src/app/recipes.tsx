@@ -1,7 +1,7 @@
 import type { RecipeMatch } from '@fridge/shared';
 import { FlatList, StyleSheet } from 'react-native';
 
-import { CONFIRMED, Screen, T, WARN } from '@/components/ui';
+import { Screen, T } from '@/components/ui';
 import { searchRecipes } from '@/lib/api';
 import { loadSearchRequest } from '@/recipes/available';
 import { RecipeRow } from '@/recipes/RecipeRow';
@@ -9,14 +9,17 @@ import { Failed, Loading } from '@/recipes/StateViews';
 import { useAsync } from '@/recipes/useAsync';
 
 function MatchRow({ match }: { match: RecipeMatch }) {
-  const n = match.missing.length;
   return (
     <RecipeRow
       id={match.recipeId}
       name={match.name}
       minutes={match.minutes}
       cuisine={match.cuisine}
-      badge={<T style={{ color: n === 0 ? CONFIRMED : WARN, fontWeight: '600' }}>{n === 0 ? 'Nothing missing' : `${n} missing`}</T>}
+      imageUrl={match.imageUrl}
+      calories={match.calories}
+      proteinGrams={match.proteinGrams}
+      highProtein={match.highProtein}
+      missing={match.missing}
     />
   );
 }
@@ -42,6 +45,6 @@ export default function RecipeMatchesScreen() {
 }
 
 const styles = StyleSheet.create({
-  list: { padding: 16, gap: 10 },
+  list: { padding: 16, gap: 16 },
   empty: { textAlign: 'center', marginTop: 40 },
 });

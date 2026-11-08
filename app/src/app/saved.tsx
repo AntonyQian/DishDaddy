@@ -26,7 +26,18 @@ export default function SavedRecipesScreen() {
         <FlatList
           data={saved}
           keyExtractor={(r) => r.id}
-          renderItem={({ item }) => <RecipeRow id={item.id} name={item.name} minutes={item.minutes} cuisine={item.cuisine} />}
+          renderItem={({ item }) => (
+            <RecipeRow
+              id={item.id}
+              name={item.name}
+              minutes={item.minutes}
+              cuisine={item.cuisine}
+              imageUrl={item.imageUrl}
+              calories={item.calories}
+              proteinGrams={item.proteinGrams}
+              highProtein={item.highProtein}
+            />
+          )}
           contentContainerStyle={styles.list}
           ListEmptyComponent={<T dim style={styles.empty}>No Saved Recipes yet. Save one from its Recipe page.</T>}
         />
@@ -36,6 +47,6 @@ export default function SavedRecipesScreen() {
 }
 
 const styles = StyleSheet.create({
-  list: { padding: 16, gap: 10 },
+  list: { padding: 16, gap: 16 },
   empty: { textAlign: 'center', marginTop: 40 },
 });
