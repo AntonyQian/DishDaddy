@@ -75,6 +75,11 @@ describe('searchRecipes', () => {
 
   it('copies display fields into the RecipeMatch', () => {
     const [m] = searchRecipes([recipe('r', ['egg'], { name: 'Eggs', cuisine: 'French', minutes: 5, imageUrl: 'u' })], { ingredients: ['egg'], ...none });
-    expect(m).toEqual({ recipeId: 'r', name: 'Eggs', imageUrl: 'u', missing: [], usedCount: 1, cuisine: 'French', minutes: 5 });
+    expect(m).toEqual({ recipeId: 'r', name: 'Eggs', imageUrl: 'u', missing: [], usedCount: 1, cuisine: 'French', minutes: 5, highProtein: false });
+  });
+
+  it('carries nutrition into the RecipeMatch', () => {
+    const [m] = searchRecipes([recipe('r', ['egg'], { calories: 480, proteinGrams: 35, highProtein: true })], { ingredients: ['egg'], ...none });
+    expect(m).toMatchObject({ calories: 480, proteinGrams: 35, highProtein: true });
   });
 });

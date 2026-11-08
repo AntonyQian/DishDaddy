@@ -145,6 +145,8 @@ export async function buildRecipes(
       minutes: r.minutes,
       steps: r.steps,
       highProtein: highProtein(r.proteinGrams),
+      ...(r.calories !== null && { calories: Math.round(r.calories) }),
+      ...(r.proteinGrams !== null && { proteinGrams: Math.round(r.proteinGrams) }),
     });
   }
 

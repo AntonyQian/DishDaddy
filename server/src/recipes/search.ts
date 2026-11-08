@@ -37,6 +37,9 @@ export function searchRecipes(recipes: readonly Recipe[], req: RecipeSearchReque
       usedCount: names.length - missing.length,
       cuisine: r.cuisine,
       minutes: r.minutes,
+      calories: r.calories,
+      proteinGrams: r.proteinGrams,
+      highProtein: r.highProtein,
     });
   }
 
