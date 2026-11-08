@@ -9,14 +9,13 @@ import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
 
 import { BookmarkButton } from '@/components/BookmarkButton';
 import { useLenis } from '@/components/SmoothScroll';
-import { Backdrop, BACKDROPS, type BackdropId } from '@/components/cook/Backdrop';
+import { Backdrop } from '@/components/cook/Backdrop';
 import { GlowButton } from '@/components/ui/GlowButton';
 import { Magnetic } from '@/components/ui/Magnetic';
 import { getRecipe, searchRecipes } from '@/lib/api';
 import { cn } from '@/lib/cn';
 import { gsap, ScrollTrigger, scrollState } from '@/lib/gsap';
 import { useKitchen } from '@/lib/kitchen';
-import { useStored } from '@/lib/store';
 import { useEquipment, useStaples } from '@/lib/usePrefs';
 import { useServings } from '@/lib/useServings';
 import { portionNutrition, scaleAmount, scaleStep, spaceFractions } from '@/lib/scale';
@@ -68,7 +67,6 @@ function Cooking({ recipe }: { recipe: Recipe }) {
   const [step, setStep] = useState(0);
   const [servings, changeServings] = useServings();
   const [open, setOpen] = useState(false);
-  const [backdrop, setBackdrop] = useStored<BackdropId>('cookBackdrop', 'aurora');
   const [checked, setChecked] = useState<Set<number>>(new Set());
 
   const n = recipe.steps.length;
@@ -83,11 +81,9 @@ function Cooking({ recipe }: { recipe: Recipe }) {
       end: 'bottom bottom',
       scrub: true,
       onUpdate: (self) => {
-        scrollState.cook = self.progress;
         setStep(Math.min(n - 1, Math.floor(self.progress * n)));
       },
     });
-    return () => { scrollState.cook = 0; };
   }, { scope: wrapper, dependencies: [n] });
 
   const goTo = useCallback((i: number) => {
@@ -115,7 +111,7 @@ function Cooking({ recipe }: { recipe: Recipe }) {
   return (
     <div ref={wrapper} style={{ height: `${(n + 1) * 100}svh` }} className="relative">
       <div className="sticky top-0 h-svh overflow-hidden">
-        <Backdrop variant={backdrop} />
+        <Backdrop />
 
         <div className="relative z-10 flex h-full flex-col px-5 pb-8 pt-28 md:px-10">
           <div className="pointer-events-auto flex flex-wrap items-start justify-between gap-4">
@@ -151,14 +147,7 @@ function Cooking({ recipe }: { recipe: Recipe }) {
           </div>
 
           <div className="pointer-events-auto flex items-end justify-between gap-4">
-            <div className="flex flex-wrap items-center gap-3">
-              <GlowButton variant="glass" onClick={() => setOpen((o) => !o)}><UtensilsCrossed className="size-4" /> Ingredients</GlowButton>
-              <div className="glass-dark flex items-center gap-1 rounded-full p-1" role="radiogroup" aria-label="Background">
-                {BACKDROPS.map((b) => (
-                  <button key={b.id} role="radio" aria-checked={backdrop === b.id} title={b.hint} onClick={() => setBackdrop(b.id)} className={cn('rounded-full px-3.5 py-2 text-xs font-bold transition-colors', backdrop === b.id ? 'bg-brand text-white' : 'text-fg-dim hover:text-fg')}>{b.label}</button>
-                ))}
-              </div>
-            </div>
+            <GlowButton variant="glass" onClick={() => setOpen((o) => !o)}><UtensilsCrossed className="size-4" /> Ingredients</GlowButton>
             <div className="flex items-center gap-3">
               <div className="mr-2 hidden items-center gap-1.5 md:flex" aria-label={`Step ${step + 1} of ${n}`}>
                 {recipe.steps.map((_, i) => (
