@@ -13,3 +13,7 @@ Recipes come from a collection we build ahead of time: a few thousand everyday r
 - Use a Food.com export that includes ingredient quantities and servings (for example irkaal's "Food.com – Recipes and Reviews"), not one with ingredient names only. Recipe pages need amounts, and the later "scale to N servings" shopping list depends on them.
 - The dataset's license is unverified; check it before any real release.
 - More sources (YouTube, Substack) can be added later through the same one-off Gemini clean-up step without changing ranking.
+
+## Update 2026-11-07
+
+Substitutions are no longer Gemini-only: they use the same LLM provider as detection (Anthropic, OpenAI or Gemini, picked by `DETECTION_PROVIDER` or the first key set; see `server/src/substitutions/provider.ts` and `server/.env.example`). The rule is unchanged: the model only adapts a real Recipe, never invents one.

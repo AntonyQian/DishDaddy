@@ -1,5 +1,9 @@
 import { File } from 'expo-file-system';
-import { FIXTURE_INGREDIENTS, type HealthResponse, type IngredientsResponse, type ScanResult } from '@fridge/shared';
+import {
+  FIXTURE_INGREDIENTS, type ErrorResponse, type HealthResponse, type IngredientsResponse, type Recipe,
+  type RecipeMatch, type RecipeSearchRequest, type ScanResult, type Substitution, type SubstitutionRequest,
+  type SubstitutionsResponse,
+} from '@fridge/shared';
 import type { CapturedPhoto } from '@/scan/types';
 import { MOCK_SCAN, SERVER_URL } from './config';
 import { mockScanResult } from './mockScan';
@@ -39,6 +43,38 @@ export async function postScan(photos: CapturedPhoto[]): Promise<ScanResult> {
   } finally {
     clearTimeout(timer);
   }
+}
+
+async function getJson<R>(path: string, init?: RequestInit): Promise<R> {
+  const res = await fetch(`${SERVER_URL}${path}`, init);
+  if (!res.ok) {
+    const message = await res.json().then((j: ErrorResponse) => j.error).catch(() => undefined);
+    throw new Error(message ?? `Server returned ${res.status}`);
+  }
+  return res.json();
+}
+
+/** Recipe Matches for the user's Ingredients, Staples and Equipment, best first. */
+export function searchRecipes(req: RecipeSearchRequest): Promise<RecipeMatch[]> {
+  return getJson('/recipes/search', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(req),
+  });
+}
+
+export function getRecipe(id: string): Promise<Recipe> {
+  return getJson(`/recipes/${encodeURIComponent(id)}`);
+}
+
+/** Proposed swaps for this Recipe's Missing Ingredients, from what the user has. */
+export async function getSubstitutions(id: string, req: SubstitutionRequest): Promise<Substitution[]> {
+  const res: SubstitutionsResponse = await getJson(`/recipes/${encodeURIComponent(id)}/substitutions`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(req),
+  });
+  return res.substitutions;
 }
 
 /** The ingredient list from GET /ingredients, or the fixture list until that endpoint exists. */

@@ -38,12 +38,16 @@ function HomeScreenBody() {
       {scan.photos.length > 0 && (
         <Button title={`Continue Scan (${scan.photos.length} photos)`} variant="secondary" onPress={() => router.push('/scan')} />
       )}
+      <Button title="Saved Recipes" variant="secondary" onPress={() => router.push('/saved')} />
+      <Button title="Staples" variant="secondary" onPress={() => router.push('/staples')} />
+      <Button title="Equipment" variant="secondary" onPress={() => router.push('/equipment')} />
 
       {latest && (
         <View style={styles.section}>
           <T style={styles.heading}>Latest Scan</T>
           <T dim>{new Date(latest.confirmedAt).toLocaleString()}</T>
           <T>{latest.ingredients.length ? latest.ingredients.join(', ') : 'No Ingredients confirmed'}</T>
+          <Button title="Find recipes" onPress={() => router.push('/recipes')} style={styles.find} />
         </View>
       )}
 
@@ -62,6 +66,7 @@ const styles = StyleSheet.create({
   section: { marginTop: 16, gap: 4 },
   heading: { fontSize: 18, fontWeight: '700' },
   small: { fontSize: 13 },
+  find: { marginTop: 8 },
 });
 
 export default function HomeScreen() {

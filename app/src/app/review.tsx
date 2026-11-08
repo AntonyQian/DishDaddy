@@ -50,7 +50,9 @@ function ReviewScreenBody() {
     try {
       await saveLatestScan(confirmed);
       reset();
+      // Home stays under the Recipe Match list, so Back from it lands there.
       router.dismissTo('/');
+      router.push('/recipes');
     } catch (e) {
       setSaving(false);
       Alert.alert('Could not save the Scan', e instanceof Error ? e.message : String(e));

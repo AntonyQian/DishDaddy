@@ -4,6 +4,7 @@ import { createApp } from './app';
 import { createDetectIngredients } from './detection/detectIngredients';
 import { selectPhotoModel } from './detection/provider';
 import { ingredientList, loadRecipes } from './recipes/collection';
+import { selectSubstitutionModel } from './substitutions/provider';
 
 const port = Number(process.env.PORT ?? 8787);
 const selected = selectPhotoModel(process.env);
@@ -21,6 +22,10 @@ const detectIngredients = selected
   ? createDetectIngredients({ model: selected.model, vocabulary })
   : undefined;
 
-serve({ fetch: createApp({ detectIngredients, recipes }).fetch, port, hostname: '0.0.0.0' }, (info) => {
+// Substitutions use the same provider and key as detection.
+const suggestSubstitutions = selectSubstitutionModel(process.env)?.suggest;
+if (!suggestSubstitutions) console.warn('No LLM API key: /recipes/:id/substitutions will answer 503');
+
+serve({ fetch: createApp({ detectIngredients, recipes, suggestSubstitutions }).fetch, port, hostname: '0.0.0.0' }, (info) => {
   console.log(`server listening on http://localhost:${info.port}`);
 });

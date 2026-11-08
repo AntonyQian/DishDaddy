@@ -1,11 +1,14 @@
 import { Hono } from 'hono';
 import type {
   ErrorResponse, HealthResponse, IngredientsResponse, Recipe, RecipeSearchRequest, ScanResult,
+  SubstitutionRequest, SubstitutionsResponse,
 } from '@fridge/shared';
 import type { DetectIngredients } from './detection/detectIngredients';
 import type { Photo } from './detection/types';
 import { ingredientList, loadRecipes } from './recipes/collection';
-import { searchRecipes } from './recipes/search';
+import { missingIngredients, searchRecipes } from './recipes/search';
+import { filterSubstitutions } from './substitutions/filter';
+import type { SuggestSubstitutions } from './substitutions/types';
 
 export const MAX_PHOTOS = 8;
 const MAX_PHOTO_BYTES = 15 * 1024 * 1024;
@@ -17,6 +20,8 @@ export interface AppDeps {
   detectIngredients?: DetectIngredients;
   /** The recipe collection; defaults to server/data/recipes.json. */
   recipes?: readonly Recipe[];
+  /** Missing when no LLM API key is set; /recipes/:id/substitutions then answers 503. */
+  suggestSubstitutions?: SuggestSubstitutions;
 }
 
 export function createApp(deps: AppDeps) {
@@ -38,6 +43,29 @@ export function createApp(deps: AppDeps) {
   app.get('/recipes/:id', (c) => {
     const recipe = byId.get(c.req.param('id'));
     return recipe ? c.json(recipe) : c.json<ErrorResponse>({ error: 'recipe not found' }, 404);
+  });
+
+  app.post('/recipes/:id/substitutions', async (c) => {
+    if (!deps.suggestSubstitutions) return c.json<ErrorResponse>({ error: 'Substitutions are not configured' }, 503);
+    const recipe = byId.get(c.req.param('id'));
+    if (!recipe) return c.json<ErrorResponse>({ error: 'recipe not found' }, 404);
+
+    const body: Partial<SubstitutionRequest> | null = await c.req.json().catch(() => null);
+    if (!body || !isStrings(body.ingredients) || !isStrings(body.staples)) {
+      return c.json<ErrorResponse>({ error: 'expected { ingredients, staples } as string arrays' }, 400);
+    }
+
+    const available = [...new Set([...body.ingredients, ...body.staples])];
+    const missing = missingIngredients(recipe, available);
+    if (missing.length === 0) return c.json<SubstitutionsResponse>({ substitutions: [] });
+
+    try {
+      const proposed = await deps.suggestSubstitutions({ recipe, missing, available });
+      return c.json<SubstitutionsResponse>({ substitutions: filterSubstitutions(proposed, missing, available) });
+    } catch (e) {
+      console.error('substitutions failed', e);
+      return c.json<ErrorResponse>({ error: 'Substitutions failed, please retry' }, 502);
+    }
   });
 
   app.get('/ingredients', (c) => c.json<IngredientsResponse>({ ingredients }));
