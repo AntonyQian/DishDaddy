@@ -36,11 +36,9 @@ export default function RootLayout() {
       <StatusBar style="dark" />
       <ScanProvider>
         <Stack screenOptions={{ headerShown: false }}>
-          <Stack.Screen name="index" />
-          <Stack.Screen name="scan" />
+          <Stack.Screen name="(tabs)" />
           <Stack.Screen name="scanning" options={{ gestureEnabled: false }} />
           <Stack.Screen name="review" />
-          <Stack.Screen name="recipes" />
           <Stack.Screen name="recipe/[id]" />
           <Stack.Screen name="saved" />
           <Stack.Screen name="equipment" />

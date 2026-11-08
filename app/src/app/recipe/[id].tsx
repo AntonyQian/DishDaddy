@@ -7,6 +7,7 @@ import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
 import { Badge, Button, Card, CONFIRMED, Screen, T, WARN } from '@/components/ui';
 import { getRecipe, getSubstitutions } from '@/lib/api';
 import { loadStaples } from '@/lib/kitchen';
+import { useGoals } from '@/lib/useGoals';
 import { loadLatestScan } from '@/lib/latestScan';
 import { findSavedRecipe } from '@/lib/savedRecipes';
 import { NutritionStrip } from '@/recipes/NutritionStrip';
@@ -66,6 +67,7 @@ function SwapRow({ swap, onAccept, onReject }: { swap: Swap; onAccept: () => voi
 
 /** The Recipe itself, its Missing Ingredients highlighted, with Substitutions for them. */
 function RecipeDetail({ recipe, have, missing }: { recipe: Recipe; have: SubstitutionRequest; missing: ReadonlySet<string> }) {
+  const goals = useGoals();
   const [swaps, setSwaps] = useState<SwapState>(() => startSwaps(missing));
   const [suggest, setSuggest] = useState<SuggestState>({ status: 'idle' });
 
@@ -104,7 +106,7 @@ function RecipeDetail({ recipe, have, missing }: { recipe: Recipe; have: Substit
           <Badge tone="neutral" label={recipe.cuisine === 'Other' ? 'Everyday cooking' : recipe.cuisine} />
           {recipe.highProtein && <Badge tone="protein" label="High protein" />}
         </View>
-        <NutritionStrip calories={recipe.calories} proteinGrams={recipe.proteinGrams} />
+        <NutritionStrip calories={recipe.calories} proteinGrams={recipe.proteinGrams} goalProtein={goals.proteinGrams} />
         <SaveToggle recipe={recipe} />
 
       <Section title={stillMissing.size ? `Ingredients (${stillMissing.size} missing)` : 'Ingredients'}>

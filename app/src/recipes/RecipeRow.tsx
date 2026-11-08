@@ -10,7 +10,7 @@ import { NutritionStrip } from './NutritionStrip';
  * One Recipe in a list (Recipe Matches, Saved Recipes) as a photo card; tapping it opens the Recipe.
  * `missing` is only given for Recipe Matches, where it says whether the user can cook it now.
  */
-export function RecipeRow({ id, name, minutes, cuisine, imageUrl, calories, proteinGrams, highProtein, missing }: {
+export function RecipeRow({ id, name, minutes, cuisine, imageUrl, calories, proteinGrams, highProtein, missing, goalProtein }: {
   id: string;
   name: string;
   minutes: number;
@@ -20,6 +20,7 @@ export function RecipeRow({ id, name, minutes, cuisine, imageUrl, calories, prot
   proteinGrams?: number;
   highProtein?: boolean;
   missing?: string[];
+  goalProtein?: number;
 }) {
   return (
     <Pressable
@@ -44,7 +45,7 @@ export function RecipeRow({ id, name, minutes, cuisine, imageUrl, calories, prot
       <View style={styles.body}>
         <T style={styles.name}>{name}</T>
         <T dim style={styles.cuisine}>{cuisine === 'Other' ? 'Everyday cooking' : `${cuisine} cooking`}</T>
-        <NutritionStrip calories={calories} proteinGrams={proteinGrams} />
+        <NutritionStrip calories={calories} proteinGrams={proteinGrams} goalProtein={goalProtein} />
         {!!missing?.length && (
           <T dim style={styles.missing}>
             Missing: {missing.slice(0, 3).join(', ')}{missing.length > 3 ? ` +${missing.length - 3} more` : ''}

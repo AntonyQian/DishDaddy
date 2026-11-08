@@ -1,12 +1,15 @@
 import { StyleSheet, View } from 'react-native';
 
 import { T } from '@/components/ui';
+import { percentOfGoal } from '@/lib/goals';
 import { COLORS, FONT } from '@/theme';
 
 /** Calories and protein per serving, as in the design. Renders nothing when the Recipe has neither. */
-export function NutritionStrip({ calories, proteinGrams }: { calories?: number; proteinGrams?: number }) {
+export function NutritionStrip({ calories, proteinGrams, goalProtein }: { calories?: number; proteinGrams?: number; goalProtein?: number }) {
   if (calories === undefined && proteinGrams === undefined) return null;
+  const share = goalProtein === undefined ? null : percentOfGoal(proteinGrams, goalProtein);
   return (
+    <View style={{ gap: 8 }}>
     <View style={styles.strip}>
       {calories !== undefined && (
         <View style={styles.cell}>
@@ -21,6 +24,12 @@ export function NutritionStrip({ calories, proteinGrams }: { calories?: number; 
       )}
       <T dim style={styles.per}>per serving</T>
     </View>
+    {share !== null && share > 0 && (
+      <View style={styles.goal}>
+        <T style={styles.goalText}>🎯 Covers {share}% of your {goalProtein} g daily protein goal</T>
+      </View>
+    )}
+    </View>
   );
 }
 
@@ -34,4 +43,6 @@ const styles = StyleSheet.create({
   unit: { fontFamily: FONT.body, fontSize: 14 },
   divider: { width: 1, height: 18, backgroundColor: COLORS.border },
   per: { fontSize: 12, marginLeft: 'auto' },
+  goal: { paddingVertical: 8, paddingHorizontal: 12, borderRadius: 12, backgroundColor: COLORS.primarySoft },
+  goalText: { fontFamily: FONT.bodySemi, fontSize: 13, color: COLORS.primary },
 });
