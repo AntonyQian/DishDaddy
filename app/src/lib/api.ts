@@ -1,7 +1,8 @@
 import { File } from 'expo-file-system';
 import {
   FIXTURE_INGREDIENTS, type ErrorResponse, type HealthResponse, type IngredientsResponse, type Recipe,
-  type RecipeMatch, type RecipeSearchRequest, type ScanResult,
+  type RecipeMatch, type RecipeSearchRequest, type ScanResult, type Substitution, type SubstitutionRequest,
+  type SubstitutionsResponse,
 } from '@fridge/shared';
 import type { CapturedPhoto } from '@/scan/types';
 import { MOCK_SCAN, SERVER_URL } from './config';
@@ -64,6 +65,16 @@ export function searchRecipes(req: RecipeSearchRequest): Promise<RecipeMatch[]> 
 
 export function getRecipe(id: string): Promise<Recipe> {
   return getJson(`/recipes/${encodeURIComponent(id)}`);
+}
+
+/** Proposed swaps for this Recipe's Missing Ingredients, from what the user has. */
+export async function getSubstitutions(id: string, req: SubstitutionRequest): Promise<Substitution[]> {
+  const res: SubstitutionsResponse = await getJson(`/recipes/${encodeURIComponent(id)}/substitutions`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(req),
+  });
+  return res.substitutions;
 }
 
 /** The ingredient list from GET /ingredients, or the fixture list until that endpoint exists. */

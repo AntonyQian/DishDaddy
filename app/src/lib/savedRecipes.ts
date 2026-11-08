@@ -9,6 +9,11 @@ export async function loadSavedRecipes(): Promise<Recipe[]> {
   return raw ? (JSON.parse(raw) as Recipe[]) : [];
 }
 
+/** The saved copy of a Recipe, if it is saved. */
+export async function findSavedRecipe(id: string): Promise<Recipe | undefined> {
+  return (await loadSavedRecipes()).find((r) => r.id === id);
+}
+
 export async function isRecipeSaved(id: string): Promise<boolean> {
   return (await loadSavedRecipes()).some((r) => r.id === id);
 }
