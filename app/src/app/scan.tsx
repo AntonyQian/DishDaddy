@@ -5,7 +5,7 @@ import { useRef, useState } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { Button, T } from '@/components/ui';
+import { ACCENT, Button, T } from '@/components/ui';
 import { useScan } from '@/scan/ScanContext';
 
 /** What to photograph next, in order. */
@@ -62,13 +62,28 @@ export default function ScanCaptureScreen() {
           <Text style={styles.promptTitle}>{spot}</Text>
           <Text style={styles.promptHint}>{SPOT_HINTS[spot] ?? 'Anything the other photos missed'}</Text>
         </View>
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel="Take photo"
-          onPress={takePhoto}
-          disabled={!ready || taking}
-          style={({ pressed }) => [styles.shutter, (pressed || taking || !ready) && { opacity: 0.6 }]}
-        />
+        <View style={styles.controls}>
+          <View style={styles.controlSide} />
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Take photo"
+            onPress={takePhoto}
+            disabled={!ready || taking}
+            style={({ pressed }) => [styles.shutter, (pressed || taking || !ready) && { opacity: 0.6 }]}
+          />
+          <View style={[styles.controlSide, { alignItems: 'flex-end' }]}>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Scan photos"
+              onPress={() => router.push('/scanning')}
+              disabled={photos.length === 0}
+              style={({ pressed }) => [styles.scanPill, (photos.length === 0 || pressed) && { opacity: photos.length === 0 ? 0.4 : 0.7 }]}>
+              <Text style={styles.scanPillText}>
+                {photos.length ? `Scan ${photos.length} ›` : 'Scan ›'}
+              </Text>
+            </Pressable>
+          </View>
+        </View>
       </View>
 
       <ScrollView horizontal contentContainerStyle={styles.thumbs} style={styles.thumbsBar}>
@@ -90,14 +105,6 @@ export default function ScanCaptureScreen() {
           </View>
         ))}
       </ScrollView>
-
-      <View style={styles.footer}>
-        <Button
-          title={photos.length ? `Scan ${photos.length} photo${photos.length > 1 ? 's' : ''}` : 'Scan'}
-          disabled={photos.length === 0}
-          onPress={() => router.push('/scanning')}
-        />
-      </View>
     </SafeAreaView>
   );
 }
@@ -110,11 +117,14 @@ const styles = StyleSheet.create({
   prompt: { marginTop: 16, paddingVertical: 8, paddingHorizontal: 16, borderRadius: 12, backgroundColor: 'rgba(0,0,0,0.55)' },
   promptTitle: { color: 'white', fontSize: 18, fontWeight: '700', textAlign: 'center' },
   promptHint: { color: 'white', fontSize: 14, textAlign: 'center' },
+  controls: { width: '100%', flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, marginBottom: 20 },
+  controlSide: { flex: 1 },
+  scanPill: { paddingVertical: 12, paddingHorizontal: 18, borderRadius: 999, backgroundColor: ACCENT },
+  scanPillText: { color: 'white', fontSize: 16, fontWeight: '700' },
   shutter: {
     width: 72,
     height: 72,
     borderRadius: 36,
-    marginBottom: 20,
     backgroundColor: 'white',
     borderWidth: 5,
     borderColor: 'rgba(255,255,255,0.5)',
@@ -135,5 +145,4 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   thumbRemoveText: { color: 'white', fontSize: 16, lineHeight: 18 },
-  footer: { paddingHorizontal: 16, paddingBottom: 8 },
 });
