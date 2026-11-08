@@ -1,6 +1,7 @@
-import { useTheme } from 'expo-router';
+import { router, useTheme } from 'expo-router';
 import type { ReactNode } from 'react';
-import { ActivityIndicator, Pressable, StyleSheet, Text, type StyleProp, type TextStyle, type ViewStyle } from 'react-native';
+import { ActivityIndicator, Pressable, StyleSheet, Text, View, type StyleProp, type TextStyle, type ViewStyle } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export const ACCENT = '#208AEF';
 export const WARN = '#C77700';
@@ -42,6 +43,31 @@ export function Button({
   );
 }
 
+/**
+ * A screen with its own header, drawn below the status bar. The native header is
+ * transparent on newer iOS and let content slide underneath it, so screens draw
+ * their own and do not depend on it.
+ */
+export function Screen({ title, back, children }: { title: string; back?: boolean; children: ReactNode }) {
+  const { colors } = useTheme();
+  return (
+    <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }} edges={['top']}>
+      <View style={[styles.header, { borderColor: colors.border }]}>
+        {back ? (
+          <Pressable accessibilityRole="button" accessibilityLabel="Back" onPress={() => router.back()} hitSlop={12} style={styles.headerBack}>
+            <Text style={{ color: ACCENT, fontSize: 28, lineHeight: 30 }}>‹</Text>
+          </Pressable>
+        ) : (
+          <View style={styles.headerBack} />
+        )}
+        <Text style={[styles.headerTitle, { color: colors.text }]} numberOfLines={1}>{title}</Text>
+        <View style={styles.headerBack} />
+      </View>
+      <View style={{ flex: 1 }}>{children}</View>
+    </SafeAreaView>
+  );
+}
+
 export function Chip({ title, onPress, selected }: { title: string; onPress: () => void; selected?: boolean }) {
   const { colors } = useTheme();
   return (
@@ -58,6 +84,9 @@ export function Chip({ title, onPress, selected }: { title: string; onPress: () 
 }
 
 const styles = StyleSheet.create({
+  header: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 8, paddingVertical: 10, borderBottomWidth: StyleSheet.hairlineWidth },
+  headerBack: { width: 44, alignItems: 'center' },
+  headerTitle: { flex: 1, textAlign: 'center', fontSize: 17, fontWeight: '600' },
   button: {
     paddingVertical: 14, paddingHorizontal: 18, borderRadius: 12, alignItems: 'center',
     justifyContent: 'center', borderWidth: StyleSheet.hairlineWidth,

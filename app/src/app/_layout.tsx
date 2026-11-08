@@ -8,11 +8,11 @@ export default function RootLayout() {
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <ScanProvider>
-        <Stack>
-          <Stack.Screen name="index" options={{ title: 'Fridge to Recipe' }} />
-          <Stack.Screen name="scan" options={{ title: 'Scan' }} />
-          <Stack.Screen name="scanning" options={{ title: 'Checking photos', headerBackVisible: false, gestureEnabled: false }} />
-          <Stack.Screen name="review" options={{ title: 'Review' }} />
+        <Stack screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="index" />
+          <Stack.Screen name="scan" />
+          <Stack.Screen name="scanning" options={{ gestureEnabled: false }} />
+          <Stack.Screen name="review" />
         </Stack>
       </ScanProvider>
     </ThemeProvider>

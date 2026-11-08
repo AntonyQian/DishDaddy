@@ -5,7 +5,7 @@ import { useRef, useState } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { ACCENT, Button, T } from '@/components/ui';
+import { ACCENT, Button, T, Screen } from '@/components/ui';
 import { useScan } from '@/scan/ScanContext';
 
 /** What to photograph next, in order. */
@@ -17,7 +17,7 @@ const SPOT_HINTS: Record<string, string> = {
   Cupboard: 'Anything in the cupboard you want to cook with',
 };
 
-export default function ScanCaptureScreen() {
+function ScanCaptureScreenBody() {
   const [permission, requestPermission] = useCameraPermissions();
   const focused = useIsFocused();
   const camera = useRef<CameraView>(null);
@@ -146,3 +146,11 @@ const styles = StyleSheet.create({
   },
   thumbRemoveText: { color: 'white', fontSize: 16, lineHeight: 18 },
 });
+
+export default function ScanCaptureScreen() {
+  return (
+    <Screen title="Scan" back>
+      <ScanCaptureScreenBody />
+    </Screen>
+  );
+}

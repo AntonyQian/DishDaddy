@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { Alert, Modal, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { Button, Chip, T } from '@/components/ui';
+import { Button, Chip, T, Screen } from '@/components/ui';
 import { saveLatestScan } from '@/lib/latestScan';
 import { useIngredientList } from '@/lib/useIngredientList';
 import { ItemRow } from '@/review/ItemRow';
@@ -14,7 +14,7 @@ import {
 } from '@/review/reviewState';
 import { useScan } from '@/scan/ScanContext';
 
-export default function ReviewScreen() {
+function ReviewScreenBody() {
   const { photos, result, reset } = useScan();
   const vocabulary = useIngredientList();
   const { colors } = useTheme();
@@ -151,3 +151,11 @@ const styles = StyleSheet.create({
   footerText: { flex: 1 },
   modal: { flex: 1, padding: 20, gap: 16 },
 });
+
+export default function ReviewScreen() {
+  return (
+    <Screen title="Review" back>
+      <ReviewScreenBody />
+    </Screen>
+  );
+}

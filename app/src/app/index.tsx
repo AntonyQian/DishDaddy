@@ -2,13 +2,13 @@ import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { Alert, ScrollView, StyleSheet, View } from 'react-native';
 
-import { Button, T } from '@/components/ui';
+import { Button, T, Screen } from '@/components/ui';
 import { getHealth } from '@/lib/api';
 import { MOCK_SCAN, SERVER_URL } from '@/lib/config';
 import { loadLatestScan, type LatestScan } from '@/lib/latestScan';
 import { useScan } from '@/scan/ScanContext';
 
-export default function HomeScreen() {
+function HomeScreenBody() {
   const scan = useScan();
   const [latest, setLatest] = useState<LatestScan | null>(null);
   const [server, setServer] = useState<'checking' | 'ok' | 'down'>('checking');
@@ -63,3 +63,11 @@ const styles = StyleSheet.create({
   heading: { fontSize: 18, fontWeight: '700' },
   small: { fontSize: 13 },
 });
+
+export default function HomeScreen() {
+  return (
+    <Screen title="Fridge to Recipe">
+      <HomeScreenBody />
+    </Screen>
+  );
+}

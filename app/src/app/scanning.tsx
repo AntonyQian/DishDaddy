@@ -2,14 +2,14 @@ import { router } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 
-import { Button, T } from '@/components/ui';
+import { Button, T, Screen } from '@/components/ui';
 import { postScan } from '@/lib/api';
 import { useScan } from '@/scan/ScanContext';
 
 /** Rough time per photo. The server checks photos in parallel, so this only paces the message. */
 const SECONDS_PER_PHOTO = 3;
 
-export default function ScanningScreen() {
+function ScanningScreenBody() {
   const { photos, setResult } = useScan();
   const [error, setError] = useState<string | null>(null);
   const [checking, setChecking] = useState(1);
@@ -84,3 +84,11 @@ const styles = StyleSheet.create({
   title: { fontSize: 20, fontWeight: '700', textAlign: 'center' },
   text: { textAlign: 'center' },
 });
+
+export default function ScanningScreen() {
+  return (
+    <Screen title="Checking photos">
+      <ScanningScreenBody />
+    </Screen>
+  );
+}
