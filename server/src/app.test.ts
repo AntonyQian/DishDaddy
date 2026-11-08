@@ -34,7 +34,7 @@ describe('recipe endpoints', () => {
   it('POST /recipes/search returns ranked RecipeMatches', async () => {
     const res = await post({ ingredients: ['egg'], staples: [], equipment: ['hob'] });
     expect(res.status).toBe(200);
-    expect(await res.json()).toEqual([{ recipeId: 'r1', name: 'Omelette', missing: ['butter'], usedCount: 1, cuisine: 'French', minutes: 10 }]);
+    expect(await res.json()).toEqual([{ recipeId: 'r1', name: 'Omelette', missing: ['butter'], usedCount: 1, cuisine: 'French', minutes: 10, highProtein: true }]);
   });
 
   it('POST /recipes/search rejects a malformed body', async () => {
