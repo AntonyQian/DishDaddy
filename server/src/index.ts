@@ -26,6 +26,6 @@ const detectIngredients = selected
 const suggestSubstitutions = selectSubstitutionModel(process.env)?.suggest;
 if (!suggestSubstitutions) console.warn('No LLM API key: /recipes/:id/substitutions will answer 503');
 
-serve({ fetch: createApp({ detectIngredients, recipes, suggestSubstitutions }).fetch, port, hostname: '0.0.0.0' }, (info) => {
+serve({ fetch: createApp({ detectIngredients, recipes, suggestSubstitutions, corsOrigin: process.env.CORS_ORIGIN }).fetch, port, hostname: '0.0.0.0' }, (info) => {
   console.log(`server listening on http://localhost:${info.port}`);
 });

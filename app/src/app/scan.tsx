@@ -146,7 +146,7 @@ const styles = StyleSheet.create({
 
 export default function ScanCaptureScreen() {
   return (
-    <Screen title="Scan" back>
+    <Screen title="Scan">
       <ScanCaptureScreenBody />
     </Screen>
   );

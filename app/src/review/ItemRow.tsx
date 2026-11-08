@@ -1,6 +1,7 @@
 import { Pressable, StyleSheet, View, type ColorValue } from 'react-native';
 
-import { CONFIRMED, Chip, T } from '@/components/ui';
+import { Badge, CONFIRMED, Chip, T } from '@/components/ui';
+import { COLORS } from '@/theme';
 import type { CapturedPhoto } from '@/scan/types';
 import { Crop, IngredientInput, OffListWarning, boxColor } from './components';
 import { choicesFor, kindOf, type ReviewItem } from './reviewState';
@@ -28,10 +29,19 @@ export function ItemRow({
   return (
     <Pressable
       onPress={onSelect}
-      style={[styles.row, { borderColor: selected ? boxColor(item) : borderColor, borderLeftColor: boxColor(item) }]}>
+      style={[styles.row, { borderColor: selected ? boxColor(item) : borderColor, borderWidth: selected ? 2 : 1 }]}>
       <View style={styles.rowTop}>
         {kind === 'unidentified' && photo && item.detection && <Crop photo={photo} box={item.detection.box} />}
-        <View style={{ flex: 1, gap: 2 }}>
+        <View style={{ flex: 1, gap: 4 }}>
+          {isConfirmed ? (
+            <Badge tone="ready" label="✓ Confirmed" />
+          ) : kind === 'named' ? (
+            <Badge tone="ok" label="Match" />
+          ) : kind === 'choice' ? (
+            <Badge tone="warn" label="Check this" />
+          ) : kind === 'unidentified' ? (
+            <Badge tone="neutral" label="Unknown item" />
+          ) : null}
           {kind === 'unidentified' && !isConfirmed ? (
             <T style={styles.itemName}>What is this?</T>
           ) : kind === 'choice' && !isConfirmed ? (
@@ -47,11 +57,7 @@ export function ItemRow({
           )}
           {isConfirmed && item.ingredient && <OffListWarning ingredient={item.ingredient} vocabulary={vocabulary} />}
         </View>
-        {isConfirmed ? (
-          <T style={styles.tick}>✓</T>
-        ) : (
-          kind === 'named' && <Chip title="Confirm" onPress={onConfirm} />
-        )}
+        {!isConfirmed && kind === 'named' && <Chip title="Confirm" onPress={onConfirm} />}
         <Pressable accessibilityRole="button" accessibilityLabel="Remove" onPress={onRemove} hitSlop={8} style={styles.remove}>
           <T dim style={styles.removeText}>×</T>
         </Pressable>
@@ -88,7 +94,7 @@ export function ItemRow({
 
 const styles = StyleSheet.create({
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  row: { borderWidth: 1, borderLeftWidth: 5, borderRadius: 10, padding: 12, gap: 10 },
+  row: { borderWidth: 1, borderRadius: 16, padding: 14, gap: 10, backgroundColor: COLORS.card },
   rowTop: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   itemName: { fontSize: 17, fontWeight: '600' },
   meta: { fontSize: 13 },

@@ -59,6 +59,19 @@ function ReviewScreenBody() {
     }
   };
 
+  const retake = () =>
+    Alert.alert('Retake photos?', `Your ${photos.length} photos and this Review will be dropped.`, [
+      { text: 'Keep reviewing', style: 'cancel' },
+      {
+        text: 'Retake',
+        style: 'destructive',
+        onPress: () => {
+          reset();
+          router.dismissTo('/scan');
+        },
+      },
+    ]);
+
   const finish = () => {
     if (pendingCount === 0) return done();
     Alert.alert(
@@ -106,6 +119,7 @@ function ReviewScreenBody() {
 
         <Button title="+ Add ingredient" variant="secondary" onPress={() => setPicking(true)} />
         <Button title="Scan barcode" variant="secondary" onPress={() => setBarcodeFor({ itemId: null })} />
+        <Button title="Retake photos" variant="danger" onPress={retake} />
       </ScrollView>
 
       <View style={[styles.footer, { borderColor: colors.border }]}>

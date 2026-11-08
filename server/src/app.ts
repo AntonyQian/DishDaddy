@@ -1,4 +1,5 @@
 import { Hono } from 'hono';
+import { cors } from 'hono/cors';
 import type {
   ErrorResponse, HealthResponse, IngredientsResponse, Recipe, RecipeSearchRequest, ScanResult,
   SubstitutionRequest, SubstitutionsResponse,
@@ -22,11 +23,14 @@ export interface AppDeps {
   recipes?: readonly Recipe[];
   /** Missing when no LLM API key is set; /recipes/:id/substitutions then answers 503. */
   suggestSubstitutions?: SuggestSubstitutions;
+  /** A web page allowed to call the server from a browser (CORS), e.g. http://localhost:8081. Off by default; phones don't need it. */
+  corsOrigin?: string;
 }
 
 export function createApp(deps: AppDeps) {
   const recipes = deps.recipes ?? loadRecipes();
   const app = new Hono();
+  if (deps.corsOrigin) app.use('*', cors({ origin: deps.corsOrigin }));
   const byId = new Map(recipes.map((r) => [r.id, r]));
   const ingredients = ingredientList(recipes);
 
