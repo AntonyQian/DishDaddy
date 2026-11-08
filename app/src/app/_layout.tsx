@@ -15,6 +15,8 @@ export default function RootLayout() {
           <Stack.Screen name="review" />
           <Stack.Screen name="recipes" />
           <Stack.Screen name="recipe/[id]" />
+          <Stack.Screen name="equipment" />
+          <Stack.Screen name="staples" />
         </Stack>
       </ScanProvider>
     </ThemeProvider>
