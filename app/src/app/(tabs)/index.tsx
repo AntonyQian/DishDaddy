@@ -8,6 +8,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AppBar } from '@/components/AppBar';
 import { Backdrop } from '@/components/Backdrop';
+import { FadeUp, PressScale, useCountUp } from '@/components/motion';
 import { Badge, Chip, Icon, T } from '@/components/ui';
 import { getHealth, searchRecipes } from '@/lib/api';
 import { MOCK_SCAN, SERVER_URL } from '@/lib/config';
@@ -52,17 +53,17 @@ function PantryTile({ ingredient, photo, onRemove }: { ingredient: string; photo
         )}
       </View>
       <T style={styles.tileName} numberOfLines={2}>{ingredient}</T>
-      <Pressable accessibilityRole="button" onPress={() => router.navigate('/recipes')} style={styles.tileButton}>
+      <PressScale accessibilityRole="button" onPress={() => router.navigate('/recipes')} to={0.93} style={styles.tileButton}>
         <Icon name="soup-kitchen" size={14} color={COLORS.text} />
         <T style={styles.tileButtonText}>Recipes</T>
-      </Pressable>
+      </PressScale>
     </View>
   );
 }
 
 function LinkRow({ icon, title, caption, to }: { icon: 'kitchen' | 'bookmark' | 'tune'; title: string; caption: string; to: '/staples' | '/equipment' | '/saved' }) {
   return (
-    <Pressable accessibilityRole="button" onPress={() => router.push(to)} style={({ pressed }) => [styles.link, pressed && { opacity: 0.9 }]}>
+    <PressScale accessibilityRole="button" onPress={() => router.push(to)} to={0.97} style={styles.link}>
       <View style={styles.linkIcon}>
         <Icon name={icon} size={20} color={COLORS.primaryText} />
       </View>
@@ -71,7 +72,7 @@ function LinkRow({ icon, title, caption, to }: { icon: 'kitchen' | 'bookmark' | 
         <T dim style={styles.linkCaption}>{caption}</T>
       </View>
       <Icon name="chevron-right" size={22} color={COLORS.outline} />
-    </Pressable>
+    </PressScale>
   );
 }
 
@@ -136,6 +137,7 @@ export default function KitchenScreen() {
   };
 
   const ingredients = latest?.ingredients ?? [];
+  const inStock = useCountUp(ingredients.length);
   const groups = categoriesOf(ingredients);
   // If the last item of the chosen group was just removed, fall back to All.
   const activeCategory = category === 'All' || groups.some(([c]) => c === category) ? category : 'All';
@@ -182,11 +184,11 @@ export default function KitchenScreen() {
             <T style={styles.heroTitle}>Quick Scan Pantry</T>
             <T style={styles.heroText}>Snap your fridge or shelf to update stock in seconds.</T>
             <View style={styles.heroRow}>
-              <Pressable accessibilityRole="button" onPress={startScan} style={({ pressed }) => [styles.scanButton, pressed && { opacity: 0.9 }]}>
+              <PressScale accessibilityRole="button" onPress={startScan} to={0.93} style={styles.scanButton}>
                 <Icon name="photo-camera" size={18} color={COLORS.primary} />
                 <T style={styles.scanButtonText}>Scan Now</T>
-              </Pressable>
-              <T style={styles.heroCount}>{ingredients.length} in stock</T>
+              </PressScale>
+              <T style={styles.heroCount}>{inStock} in stock</T>
             </View>
             {scan.photos.length > 0 && (
               <Pressable accessibilityRole="button" onPress={() => router.push('/scan')} style={{ marginTop: 10 }}>
@@ -220,8 +222,10 @@ export default function KitchenScreen() {
             <View style={{ gap: 8 }}>
               <T style={styles.sectionTitle}>Fresh in Stock</T>
               <View style={styles.grid}>
-                {shown.map((i) => (
-                  <PantryTile key={i} ingredient={i} photo={photos[i]} onRemove={() => remove(i)} />
+                {shown.map((i, n) => (
+                  <FadeUp key={i} index={n} style={styles.tileSlot}>
+                    <PantryTile ingredient={i} photo={photos[i]} onRemove={() => remove(i)} />
+                  </FadeUp>
                 ))}
               </View>
             </View>
@@ -297,8 +301,9 @@ const styles = StyleSheet.create({
   emptyText: { fontSize: 14, textAlign: 'center' },
   sectionTitle: { fontSize: 18, fontWeight: '700' },
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 16 },
+  tileSlot: { width: '47%', flexGrow: 1 },
   tile: {
-    width: '47%', flexGrow: 1, padding: 12, gap: 8, backgroundColor: COLORS.card, borderRadius: RADIUS.xl, borderWidth: 1, borderColor: COLORS.border,
+    padding: 12, gap: 8, backgroundColor: COLORS.card, borderRadius: RADIUS.xl, borderWidth: 1, borderColor: COLORS.border,
   },
   tileTop: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   tileDelete: { padding: 2 },

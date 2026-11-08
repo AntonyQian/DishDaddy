@@ -1,6 +1,8 @@
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+
+import { PressScale } from '@/components/motion';
 
 import { Badge, Icon, T } from '@/components/ui';
 import { COLORS, FONT, RADIUS } from '@/theme';
@@ -26,7 +28,7 @@ export function RecipeRow({ id, name, minutes, cuisine, imageUrl, calories, prot
   const open = () => router.push({ pathname: '/recipe/[id]', params: { id } });
   const ready = missing?.length === 0;
   return (
-    <Pressable accessibilityRole="button" onPress={open} style={({ pressed }) => [styles.card, pressed && { opacity: 0.92 }]}>
+    <PressScale accessibilityRole="button" onPress={open} to={0.97} style={styles.card}>
       <View style={styles.top}>
         <View style={styles.photo}>
           {!!imageUrl && <Image source={{ uri: imageUrl }} style={StyleSheet.absoluteFill} contentFit="cover" transition={150} />}
@@ -56,7 +58,7 @@ export function RecipeRow({ id, name, minutes, cuisine, imageUrl, calories, prot
           <Icon name="arrow-forward" size={16} color={COLORS.onPrimary} />
         </View>
       </View>
-    </Pressable>
+    </PressScale>
   );
 }
 

@@ -2,10 +2,12 @@ import type { Recipe } from '@fridge/shared';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
+import Animated, { FadeInRight, FadeOutLeft } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AppBar } from '@/components/AppBar';
 import { Backdrop } from '@/components/Backdrop';
+import { ProgressFill } from '@/components/motion';
 import { Button, EmptyState, T } from '@/components/ui';
 import { scaleStep, spaceFractions } from '@/recipes/scale';
 import { Failed, Loading } from '@/recipes/StateViews';
@@ -43,16 +45,18 @@ function CookSteps({ recipe, servings }: { recipe: Recipe; servings: number }) {
       <View style={{ gap: 8 }}>
         <T dim style={styles.progressText}>Step {step + 1} of {recipe.steps.length}</T>
         <View style={styles.track}>
-          <View style={[styles.fill, { width: `${((step + 1) / recipe.steps.length) * 100}%` }]} />
+          <ProgressFill fraction={(step + 1) / recipe.steps.length} style={styles.fill} />
         </View>
       </View>
 
-      <ScrollView style={styles.card} contentContainerStyle={{ padding: 20, gap: 12 }}>
-        <View style={styles.stepNo}>
-          <T style={styles.stepNoText}>{step + 1}</T>
-        </View>
-        <T style={styles.stepText}>{spaceFractions(scaleStep(recipe.steps[step], factor))}</T>
-      </ScrollView>
+      <Animated.View key={step} entering={FadeInRight.duration(380)} exiting={FadeOutLeft.duration(160)} style={styles.cardSlot}>
+        <ScrollView style={styles.card} contentContainerStyle={{ padding: 20, gap: 12 }}>
+          <View style={styles.stepNo}>
+            <T style={styles.stepNoText}>{step + 1}</T>
+          </View>
+          <T style={styles.stepText}>{spaceFractions(scaleStep(recipe.steps[step], factor))}</T>
+        </ScrollView>
+      </Animated.View>
 
       <View style={styles.buttons}>
         <Button title="Back" variant="secondary" disabled={step === 0} onPress={() => setStep((s) => s - 1)} style={{ flex: 1 }} />
@@ -99,6 +103,7 @@ const styles = StyleSheet.create({
   progressText: { fontSize: 13, fontWeight: '700' },
   track: { height: 8, borderRadius: 4, backgroundColor: COLORS.chipBg, overflow: 'hidden' },
   fill: { height: 8, borderRadius: 4, backgroundColor: COLORS.primary },
+  cardSlot: { flex: 1 },
   card: { flex: 1, backgroundColor: COLORS.card, borderRadius: RADIUS.lg, borderWidth: 1, borderColor: COLORS.border },
   stepNo: { width: 40, height: 40, borderRadius: 20, backgroundColor: COLORS.primarySoft, alignItems: 'center', justifyContent: 'center' },
   stepNoText: { color: COLORS.primaryText, fontSize: 18, fontWeight: '800' },

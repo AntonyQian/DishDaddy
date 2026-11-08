@@ -2,9 +2,10 @@ import type { Recipe, SubstitutionRequest } from '@fridge/shared';
 import { Image } from 'expo-image';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState, type ReactNode } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { FadeUp, PressScale } from '@/components/motion';
 import { Badge, Button, Icon, Screen, T } from '@/components/ui';
 import { getSubstitutions } from '@/lib/api';
 import { equipmentLabel, loadStaples } from '@/lib/kitchen';
@@ -133,13 +134,13 @@ function RecipeDetail({ recipe, have, missing }: { recipe: Recipe; have: Substit
             <View style={styles.stat}>
               <T dim style={styles.statLabel}>Servings</T>
               <View style={styles.stepper}>
-                <Pressable accessibilityRole="button" accessibilityLabel="Fewer servings" onPress={() => changeServings(-1)} hitSlop={8} style={styles.stepButton}>
+                <PressScale accessibilityRole="button" accessibilityLabel="Fewer servings" to={0.8} onPress={() => changeServings(-1)} hitSlop={8} style={styles.stepButton}>
                   <Icon name="remove" size={18} color={COLORS.primaryText} />
-                </Pressable>
+                </PressScale>
                 <T style={styles.stepValue}>{servings}</T>
-                <Pressable accessibilityRole="button" accessibilityLabel="More servings" onPress={() => changeServings(1)} hitSlop={8} style={styles.stepButton}>
+                <PressScale accessibilityRole="button" accessibilityLabel="More servings" to={0.8} onPress={() => changeServings(1)} hitSlop={8} style={styles.stepButton}>
                   <Icon name="add" size={18} color={COLORS.primaryText} />
-                </Pressable>
+                </PressScale>
               </View>
             </View>
           </View>
@@ -160,7 +161,7 @@ function RecipeDetail({ recipe, have, missing }: { recipe: Recipe; have: Substit
             const shown = swapRows.has(n) ? visibleSwaps(swaps, i.ingredient) : [];
             const note = isMissing ? 'Missing from your kitchen' : i.original && norm(i.original) !== norm(i.ingredient) ? i.original : undefined;
             return (
-              <View key={`${i.ingredient}-${n}`} style={{ gap: 6 }}>
+              <FadeUp key={`${i.ingredient}-${n}`} index={n} style={{ gap: 6 }}>
                 <View style={[styles.ingredient, isMissing && styles.ingredientMissing]}>
                   <View style={[styles.check, isMissing ? styles.checkOff : styles.checkOn]}>
                     {!isMissing && <Icon name="check" size={14} color={COLORS.onPrimary} />}
@@ -179,7 +180,7 @@ function RecipeDetail({ recipe, have, missing }: { recipe: Recipe; have: Substit
                     onReject={() => setSwaps((st) => rejectSwap(st, s.id))}
                   />
                 ))}
-              </View>
+              </FadeUp>
             );
           })}
 
@@ -202,7 +203,7 @@ function RecipeDetail({ recipe, have, missing }: { recipe: Recipe; have: Substit
         <View style={{ gap: 8 }}>
           <SectionHeader title="Cooking Steps" right={<T dim style={styles.stepCount}>{recipe.steps.length} steps</T>} />
           {recipe.steps.map((s, n) => (
-            <View key={n} style={styles.step}>
+            <FadeUp key={n} index={n} style={styles.step}>
               <View style={styles.stepHead}>
                 <View style={styles.stepNo}>
                   <T style={styles.stepNoText}>{n + 1}</T>
@@ -210,7 +211,7 @@ function RecipeDetail({ recipe, have, missing }: { recipe: Recipe; have: Substit
                 <T style={styles.stepTitle}>Step {n + 1}</T>
               </View>
               <T dim style={styles.stepText}>{spaceFractions(scaleStep(s, factor))}</T>
-            </View>
+            </FadeUp>
           ))}
         </View>
       </ScrollView>

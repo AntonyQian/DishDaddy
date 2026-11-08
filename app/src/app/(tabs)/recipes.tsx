@@ -10,6 +10,7 @@ import { searchRecipes } from '@/lib/api';
 import { loadLatestScan } from '@/lib/latestScan';
 import { loadSearchRequest } from '@/recipes/available';
 import { applyFilters, countFilters, FILTER_LABELS, matchesQuery, type MatchFilter } from '@/recipes/matchFilters';
+import { FadeUp, useCountUp } from '@/components/motion';
 import { RecipeRow } from '@/recipes/RecipeRow';
 import { RecipeListSkeleton } from '@/recipes/Skeleton';
 import { Failed } from '@/recipes/StateViews';
@@ -19,8 +20,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 const FILTERS = Object.keys(FILTER_LABELS) as MatchFilter[];
 
-function MatchRow({ match }: { match: RecipeMatch }) {
+function MatchRow({ match, index }: { match: RecipeMatch; index: number }) {
   return (
+    <FadeUp index={index % 3}>
     <RecipeRow
       id={match.recipeId}
       name={match.name}
@@ -32,6 +34,7 @@ function MatchRow({ match }: { match: RecipeMatch }) {
       missing={match.missing}
       have={match.usedCount}
     />
+    </FadeUp>
   );
 }
 
@@ -74,6 +77,7 @@ export default function RecipeMatchesScreen() {
 
   const ready = state.status === 'ready' ? state.value : null;
   const counts = countFilters(ready?.matches ?? []);
+  const readyCount = useCountUp(counts.ready);
   const shown = ready ? applyFilters(ready.matches, active).filter((m) => matchesQuery(m, query)) : [];
   const filtering = active.size > 0 || query.trim() !== '';
 
@@ -94,7 +98,7 @@ export default function RecipeMatchesScreen() {
         <FlatList
           data={shown}
           keyExtractor={(m) => m.recipeId}
-          renderItem={({ item }) => <MatchRow match={item} />}
+          renderItem={({ item, index }) => <MatchRow match={item} index={index} />}
           contentContainerStyle={styles.list}
           keyboardShouldPersistTaps="handled"
           ListHeaderComponent={
@@ -120,7 +124,7 @@ export default function RecipeMatchesScreen() {
                 <View style={styles.heroText}>
                   <View style={styles.heroBadge}>
                     <Icon name="check-circle" size={13} color={COLORS.primaryText} />
-                    <T style={styles.heroBadgeText}>{counts.ready} In Stock</T>
+                    <T style={styles.heroBadgeText}>{readyCount} In Stock</T>
                   </View>
                   <T style={styles.heroTitle}>Ready to cook</T>
                   <T dim style={styles.heroSub}>
