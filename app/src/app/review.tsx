@@ -4,6 +4,8 @@ import { Alert, Modal, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button, Chip, T, Screen } from '@/components/ui';
+import { keepStocked, mergePhotos, photosFromReview } from '@/lib/itemPhotos';
+import { loadItemPhotos, persistPhotos, saveItemPhotos, sweepPhotoFiles } from '@/lib/itemPhotoStore';
 import { addScanToKitchen } from '@/lib/latestScan';
 import { goBack } from '@/lib/navigation';
 import { useIngredientList } from '@/lib/useIngredientList';
@@ -49,7 +51,14 @@ function ReviewScreenBody() {
   const done = async () => {
     setSaving(true);
     try {
-      await addScanToKitchen(confirmed);
+      const kitchen = await addScanToKitchen(confirmed);
+      // Keep each found item's photo with it until the user removes it. A photo problem never blocks the Scan.
+      try {
+        const saved = mergePhotos(await loadItemPhotos(), await persistPhotos(photosFromReview(items, photos)));
+        const kept = keepStocked(saved, kitchen.ingredients);
+        await saveItemPhotos(kept);
+        sweepPhotoFiles(kept);
+      } catch {}
       reset();
       // Home stays under the Recipe Match list, so Back from it lands there.
       router.dismissTo('/');
