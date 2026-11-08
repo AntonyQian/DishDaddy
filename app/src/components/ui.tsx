@@ -1,12 +1,14 @@
 import { MaterialIcons } from '@expo/vector-icons';
 import type { ComponentProps, ReactNode } from 'react';
 import {
-  ActivityIndicator, Pressable, StyleSheet, Text, View,
+  ActivityIndicator, StyleSheet, Text, View,
   type StyleProp, type TextStyle, type ViewStyle,
 } from 'react-native';
+import Animated, { Easing, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Backdrop } from '@/components/Backdrop';
+import { PressScale } from '@/components/motion';
 import { goBack } from '@/lib/navigation';
 import { COLORS, FONT, RADIUS } from '@/theme';
 
@@ -65,16 +67,22 @@ export function Button({
   icon?: IconName;
 }) {
   const { bg, fg, border } = BUTTON[variant];
+  // A bright streak sweeps across the solid button each time it is pressed.
+  const sweep = useSharedValue(-120);
+  const sheen = useAnimatedStyle(() => ({ transform: [{ translateX: sweep.value }, { skewX: '-20deg' }] }));
+  const flash = () => {
+    sweep.value = -120;
+    sweep.value = withTiming(520, { duration: 650, easing: Easing.out(Easing.cubic) });
+  };
   return (
-    <Pressable
+    <PressScale
       accessibilityRole="button"
       onPress={onPress}
+      onPressStart={variant === 'primary' ? flash : undefined}
       disabled={disabled || busy}
-      style={({ pressed }) => [
-        styles.button,
-        { backgroundColor: bg, borderColor: border ?? bg, opacity: disabled ? 0.4 : pressed ? 0.85 : 1, transform: [{ scale: pressed ? 0.98 : 1 }] },
-        style,
-      ]}>
+      to={0.96}
+      style={[styles.button, { backgroundColor: bg, borderColor: border ?? bg, opacity: disabled ? 0.4 : 1 }, style]}>
+      {variant === 'primary' && <Animated.View pointerEvents="none" style={[styles.sheen, sheen]} />}
       {busy ? (
         <ActivityIndicator color={fg} />
       ) : (
@@ -83,21 +91,22 @@ export function Button({
           {icon && <Icon name={icon} size={20} color={fg} />}
         </View>
       )}
-    </Pressable>
+    </PressScale>
   );
 }
 
 /** A round 44 px icon button, like the design's back and bookmark buttons. */
 export function RoundButton({ icon, label, onPress, active }: { icon: IconName; label: string; onPress: () => void; active?: boolean }) {
   return (
-    <Pressable
+    <PressScale
       accessibilityRole="button"
       accessibilityLabel={label}
       onPress={onPress}
       hitSlop={6}
-      style={({ pressed }) => [styles.round, active && { backgroundColor: COLORS.primarySoft }, pressed && { transform: [{ scale: 0.93 }] }]}>
+      to={0.85}
+      style={[styles.round, active && { backgroundColor: COLORS.primarySoft }]}>
       <Icon name={icon} size={22} color={active ? COLORS.primaryText : COLORS.text} />
-    </Pressable>
+    </PressScale>
   );
 }
 
@@ -130,21 +139,18 @@ export function Screen({ title, eyebrow, back, right, children }: {
 /** A filter pill, with an optional count: the active one is solid indigo, the others white. */
 export function Chip({ title, onPress, selected, count }: { title: string; onPress: () => void; selected?: boolean; count?: number }) {
   return (
-    <Pressable
+    <PressScale
       accessibilityRole="button"
       onPress={onPress}
-      style={({ pressed }) => [
-        styles.chip,
-        selected ? styles.chipOn : styles.chipOff,
-        { opacity: pressed ? 0.85 : 1 },
-      ]}>
+      to={0.93}
+      style={[styles.chip, selected ? styles.chipOn : styles.chipOff]}>
       <Text style={{ color: selected ? COLORS.onPrimary : COLORS.text, fontFamily: FONT.semi, fontSize: 13 }}>{title}</Text>
       {count !== undefined && (
         <View style={[styles.count, { backgroundColor: selected ? COLORS.primaryContainer : COLORS.chipBg }]}>
           <Text style={{ color: selected ? COLORS.onPrimary : COLORS.muted, fontFamily: FONT.bold, fontSize: 11 }}>{count}</Text>
         </View>
       )}
-    </Pressable>
+    </PressScale>
   );
 }
 
@@ -199,7 +205,8 @@ const styles = StyleSheet.create({
     width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center',
     backgroundColor: COLORS.card, borderWidth: 1, borderColor: COLORS.border,
   },
-  button: { paddingVertical: 14, paddingHorizontal: 24, borderRadius: RADIUS.full, alignItems: 'center', justifyContent: 'center', borderWidth: 1 },
+  button: { paddingVertical: 14, paddingHorizontal: 24, borderRadius: RADIUS.full, alignItems: 'center', justifyContent: 'center', borderWidth: 1, overflow: 'hidden' },
+  sheen: { position: 'absolute', top: 0, bottom: 0, left: 0, width: 70, backgroundColor: 'rgba(255,255,255,0.28)' },
   buttonRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   buttonText: { fontSize: 15, fontFamily: FONT.bold },
   chip: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingVertical: 8, paddingHorizontal: 16, borderRadius: RADIUS.full, borderWidth: 1 },
