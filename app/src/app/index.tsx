@@ -38,6 +38,8 @@ function HomeScreenBody() {
       {scan.photos.length > 0 && (
         <Button title={`Continue Scan (${scan.photos.length} photos)`} variant="secondary" onPress={() => router.push('/scan')} />
       )}
+      <Button title="Staples" variant="secondary" onPress={() => router.push('/staples')} />
+      <Button title="Equipment" variant="secondary" onPress={() => router.push('/equipment')} />
 
       {latest && (
         <View style={styles.section}>
