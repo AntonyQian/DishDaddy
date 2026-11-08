@@ -7,6 +7,7 @@ import { Check, ChevronLeft, ChevronRight, Minus, Plus, Timer, UtensilsCrossed }
 import { useSearchParams } from 'next/navigation';
 import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
 
+import { BookmarkButton } from '@/components/BookmarkButton';
 import { useLenis } from '@/components/SmoothScroll';
 import { CookScene } from '@/components/three/scenes';
 import { GlowButton } from '@/components/ui/GlowButton';
@@ -15,6 +16,7 @@ import { getRecipe, searchRecipes } from '@/lib/api';
 import { cn } from '@/lib/cn';
 import { gsap, ScrollTrigger, scrollState } from '@/lib/gsap';
 import { useKitchen } from '@/lib/kitchen';
+import { useEquipment, useStaples } from '@/lib/usePrefs';
 import { portionNutrition, scaleAmount, scaleStep, spaceFractions } from '@/lib/scale';
 import { minutesIn } from '@/lib/steps';
 
@@ -138,13 +140,16 @@ function Cooking({ recipe }: { recipe: Recipe }) {
                 for {servings} {servings === 1 ? 'serving' : 'servings'}
               </div>
             </div>
-            <div className="glass flex items-center gap-1 rounded-full p-1.5">
+            <div className="flex items-center gap-3">
+            <BookmarkButton recipe={recipe} className="size-12" />
+            <div className="glass-dark flex items-center gap-1 rounded-full p-1.5">
               <button aria-label="Fewer servings" onClick={() => changeServings(-1)} className="rounded-full p-2.5 transition-colors hover:bg-white/10"><Minus className="size-4" /></button>
               <div className="min-w-16 text-center">
                 <div className="text-lg font-extrabold leading-none">{servings}</div>
                 <div className="text-[10px] font-bold uppercase tracking-widest text-fg-mute">servings</div>
               </div>
               <button aria-label="More servings" onClick={() => changeServings(1)} className="rounded-full p-2.5 transition-colors hover:bg-white/10"><Plus className="size-4" /></button>
+            </div>
             </div>
           </div>
 
@@ -210,6 +215,8 @@ function Cooking({ recipe }: { recipe: Recipe }) {
 function CookInner() {
   const id = useSearchParams().get('id');
   const { items } = useKitchen();
+  const [staples] = useStaples();
+  const [equipment] = useEquipment();
   const [recipe, setRecipe] = useState<Recipe | null | undefined>(undefined);
   const [error, setError] = useState(false);
 
@@ -219,7 +226,7 @@ function CookInner() {
     let live = true;
     (async () => {
       try {
-        const chosen = id ?? (items?.length ? (await searchRecipes(items)).find((m) => m.missing.length === 0)?.recipeId : undefined);
+        const chosen = id ?? (items?.length ? (await searchRecipes(items, staples, equipment)).find((m) => m.missing.length === 0)?.recipeId : undefined);
         const r = chosen ? await getRecipe(chosen) : null;
         if (live) setRecipe(r);
       } catch {
@@ -227,7 +234,7 @@ function CookInner() {
       }
     })();
     return () => { live = false; };
-  }, [id, items]);
+  }, [id, items, staples, equipment]);
 
   if (error) return <Notice title="Can't reach the recipe server" text="Start it with npm run server, then reload." />;
   if (recipe === undefined) return <Notice title="Getting your recipe…" text="" />;

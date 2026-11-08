@@ -3,33 +3,39 @@
 import { useGSAP } from '@gsap/react';
 import type { RecipeMatch } from '@fridge/shared';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Camera, Plus, Sparkles, Trash2 } from 'lucide-react';
+import { Camera, Sparkles, Trash2 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
 import { HeroScene } from '@/components/three/scenes';
 import { CountUp } from '@/components/ui/CountUp';
 import { GlowButton } from '@/components/ui/GlowButton';
 import { Magnetic } from '@/components/ui/Magnetic';
-import { Marquee } from '@/components/ui/Marquee';
+import { AddIngredient } from '@/components/kitchen/AddIngredient';
+import { Appliances } from '@/components/kitchen/Appliances';
+import { Essentials } from '@/components/kitchen/Essentials';
+import { SavedRecipes } from '@/components/kitchen/SavedRecipes';
 import { SpotlightCard } from '@/components/ui/SpotlightCard';
 import { SplitReveal } from '@/components/ui/SplitReveal';
 import { searchRecipes } from '@/lib/api';
 import { gsap, ScrollTrigger, scrollState } from '@/lib/gsap';
 import { insertIngredient, SAMPLE_KITCHEN, useKitchen } from '@/lib/kitchen';
 import { categoriesOf, categoryOf, emojiFor, type Category } from '@/lib/pantry';
-import { suggest, useIngredients } from '@/lib/useIngredients';
+import { useIngredients } from '@/lib/useIngredients';
+import { useEquipment, useStaples } from '@/lib/usePrefs';
 import { cn } from '@/lib/cn';
 
 const capital = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
 function useMatches(items: string[] | null) {
   const [matches, setMatches] = useState<RecipeMatch[] | null>(null);
+  const [staples] = useStaples();
+  const [equipment] = useEquipment();
   useEffect(() => {
     if (!items?.length) return setMatches([]);
     let live = true;
-    searchRecipes(items).then((m) => live && setMatches(m), () => live && setMatches([]));
+    searchRecipes(items, staples, equipment).then((m) => live && setMatches(m), () => live && setMatches([]));
     return () => { live = false; };
-  }, [items]);
+  }, [items, staples, equipment]);
   return matches;
 }
 
@@ -88,42 +94,6 @@ function Hero({ count, ready }: { count: number; ready: number }) {
         </motion.div>
       </div>
     </section>
-  );
-}
-
-function AddIngredient({ onAdd, vocabulary }: { onAdd: (name: string) => void; vocabulary: string[] }) {
-  const [text, setText] = useState('');
-  const options = suggest(text, vocabulary);
-  const submit = (name: string) => {
-    if (!name.trim()) return;
-    onAdd(name);
-    setText('');
-  };
-  return (
-    <div className="relative z-20">
-      <form onSubmit={(e) => { e.preventDefault(); submit(text); }} className="glass flex items-center gap-3 rounded-full py-2 pl-6 pr-2">
-        <Plus className="size-5 text-fg-mute" />
-        <input
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          placeholder="Add an ingredient: eggs, spinach, rice…"
-          className="min-w-0 flex-1 bg-transparent py-2 text-base font-medium outline-none placeholder:text-fg-mute"
-          aria-label="Add an ingredient"
-        />
-        <GlowButton type="submit" size="md">Add</GlowButton>
-      </form>
-      <AnimatePresence>
-        {options.length > 0 && (
-          <motion.div initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="absolute left-0 right-0 top-full mt-3 flex flex-wrap gap-2">
-            {options.map((o) => (
-              <button key={o} onClick={() => submit(o)} className="glass rounded-full px-4 py-2 text-sm font-bold transition-colors hover:border-brand-soft/60 hover:text-brand-soft">
-                {capital(o)}
-              </button>
-            ))}
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
   );
 }
 
@@ -250,13 +220,14 @@ export default function KitchenPage() {
   const { items, set, add, remove } = useKitchen();
   const matches = useMatches(items);
   const ready = matches?.filter((m) => m.missing.length === 0) ?? [];
-  const names = items?.length ? items.map(capital) : ['Eggs', 'Milk', 'Spinach', 'Tomatoes', 'Butter', 'Rice', 'Cheddar'];
 
   return (
     <>
       <Hero count={items?.length ?? 0} ready={ready.length} />
-      <Marquee items={names} speed={Math.max(24, names.length * 5)} className="text-outline border-y border-white/10 py-6 text-[clamp(2.5rem,7vw,6rem)] font-extrabold uppercase leading-none tracking-[-0.04em]" />
       <Stock items={items ?? []} set={set} remove={remove} add={add} />
+      <Essentials />
+      <Appliances />
+      <SavedRecipes />
       <ChefPick pick={ready[0]} />
       <footer className="border-t border-white/10 px-5 py-10 text-center text-sm font-medium text-fg-mute">DishDaddy. Cook with what you have.</footer>
     </>
