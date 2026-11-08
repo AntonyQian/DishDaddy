@@ -9,6 +9,19 @@ describe('GET /health', () => {
   });
 });
 
+describe('CORS', () => {
+  const ask = (corsOrigin?: string) =>
+    createApp({ corsOrigin }).request('/health', { headers: { origin: 'http://localhost:8081' } });
+
+  it('is off unless an origin is configured, so only the configured web page can call the server', async () => {
+    expect((await ask()).headers.get('access-control-allow-origin')).toBeNull();
+  });
+
+  it('allows the configured origin, for previewing the app in a browser', async () => {
+    expect((await ask('http://localhost:8081')).headers.get('access-control-allow-origin')).toBe('http://localhost:8081');
+  });
+});
+
 describe('recipe endpoints', () => {
   const recipe = {
     id: 'r1', name: 'Omelette', servings: 1, equipment: ['hob'], cuisine: 'French', minutes: 10, steps: ['Cook.'], highProtein: true,
