@@ -6,13 +6,15 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AppBar } from '@/components/AppBar';
 import { Button, EmptyState, T } from '@/components/ui';
+import { scaleStep, spaceFractions } from '@/recipes/scale';
 import { Failed, Loading } from '@/recipes/StateViews';
 import { loadRecipe } from '@/recipes/loadRecipe';
 import { useAsync } from '@/recipes/useAsync';
 import { COLORS, RADIUS } from '@/theme';
 
 /** One step at a time, big enough to read from across the counter, with Back and Next. */
-function CookSteps({ recipe }: { recipe: Recipe }) {
+function CookSteps({ recipe, servings }: { recipe: Recipe; servings: number }) {
+  const factor = servings / Math.max(1, recipe.servings);
   const [step, setStep] = useState(0);
   const last = recipe.steps.length - 1;
   const done = step > last;
@@ -34,6 +36,7 @@ function CookSteps({ recipe }: { recipe: Recipe }) {
       <View style={{ gap: 4 }}>
         <T style={styles.eyebrow}>COOKING</T>
         <T style={styles.recipeName} numberOfLines={2}>{recipe.name}</T>
+        <T dim style={styles.forServings}>For {servings} {servings === 1 ? 'serving' : 'servings'}</T>
       </View>
 
       <View style={{ gap: 8 }}>
@@ -47,7 +50,7 @@ function CookSteps({ recipe }: { recipe: Recipe }) {
         <View style={styles.stepNo}>
           <T style={styles.stepNoText}>{step + 1}</T>
         </View>
-        <T style={styles.stepText}>{recipe.steps[step]}</T>
+        <T style={styles.stepText}>{spaceFractions(scaleStep(recipe.steps[step], factor))}</T>
       </ScrollView>
 
       <View style={styles.buttons}>
@@ -64,7 +67,8 @@ function CookSteps({ recipe }: { recipe: Recipe }) {
 }
 
 export default function CookModeScreen() {
-  const { id } = useLocalSearchParams<{ id?: string }>();
+  const { id, servings } = useLocalSearchParams<{ id?: string; servings?: string }>();
+  const count = Number(servings) >= 1 ? Number(servings) : 1;
   const [state, retry] = useAsync(() => (id ? loadRecipe(id) : Promise.resolve(null)), [id]);
 
   return (
@@ -79,7 +83,7 @@ export default function CookModeScreen() {
           action={{ label: 'Browse recipes', onPress: () => router.navigate('/recipes') }}
         />
       )}
-      {state.status === 'ready' && state.value && <CookSteps key={state.value.id} recipe={state.value} />}
+      {state.status === 'ready' && state.value && <CookSteps key={`${state.value.id}-${count}`} recipe={state.value} servings={count} />}
     </SafeAreaView>
   );
 }
@@ -89,6 +93,7 @@ const styles = StyleSheet.create({
   body: { flex: 1, paddingHorizontal: 20, paddingTop: 12, paddingBottom: 130, gap: 20 },
   eyebrow: { fontSize: 11, fontWeight: '700', letterSpacing: 1, color: COLORS.primary },
   recipeName: { fontSize: 24, fontWeight: '800', lineHeight: 30, letterSpacing: -0.4 },
+  forServings: { fontSize: 13, fontWeight: '600' },
   progressText: { fontSize: 13, fontWeight: '700' },
   track: { height: 8, borderRadius: 4, backgroundColor: COLORS.chipBg, overflow: 'hidden' },
   fill: { height: 8, borderRadius: 4, backgroundColor: COLORS.primary },
