@@ -46,6 +46,11 @@ export interface RecipeMatch {
   usedCount: number;
   cuisine: string;
   minutes: number;
+  /** Per serving; absent when the source has no nutrition data. */
+  calories?: number;
+  /** Grams of protein per serving; absent when the source has none. */
+  proteinGrams?: number;
+  highProtein?: boolean;
 }
 
 export interface RecipeIngredient {
@@ -69,6 +74,10 @@ export interface Recipe {
   steps: string[];
   /** The protein flag. */
   highProtein: boolean;
+  /** Kilocalories per serving; absent when the source has no nutrition data. */
+  calories?: number;
+  /** Grams of protein per serving; absent when the source has none. */
+  proteinGrams?: number;
 }
 
 /** Body of POST /recipes/:id/substitutions: what the user has. */
