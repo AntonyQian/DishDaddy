@@ -8,11 +8,12 @@ import { getRecipe, getSubstitutions } from '@/lib/api';
 import { loadStaples } from '@/lib/kitchen';
 import { loadLatestScan } from '@/lib/latestScan';
 import { findSavedRecipe } from '@/lib/savedRecipes';
-import { missingIngredients } from '@/recipes/recipeMatch';
+import { missingIngredients, norm } from '@/recipes/recipeMatch';
 import { SaveToggle } from '@/recipes/SaveToggle';
 import { Failed, Loading } from '@/recipes/StateViews';
 import {
-  acceptSwap, offerSwaps, rejectSwap, startSwaps, swapLabel, visibleSwaps, type Swap, type SwapState,
+  acceptSwap, hasOpenSwaps, isStillMissing, offerSwaps, rejectSwap, startSwaps, swapLabel, visibleSwaps,
+  type Swap, type SwapState,
 } from '@/recipes/substitutions';
 import { useAsync } from '@/recipes/useAsync';
 
@@ -78,6 +79,16 @@ function RecipeDetail({ recipe, have, missing }: { recipe: Recipe; have: Substit
 
   const stillMissing = swaps.missing;
   const offered = swaps.swaps.length > 0;
+  const canSuggest = stillMissing.size > 0 && !hasOpenSwaps(swaps) && (suggest.status === 'idle' || suggest.status === 'done');
+  // Swaps show once per Missing Ingredient, under its first row, even when the Recipe lists it twice.
+  const swapRows = new Set<number>();
+  const seen = new Set<string>();
+  recipe.ingredients.forEach((i, n) => {
+    const item = norm(i.ingredient);
+    if (seen.has(item)) return;
+    seen.add(item);
+    if ([...missing].some((m) => norm(m) === item)) swapRows.add(n);
+  });
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -90,8 +101,8 @@ function RecipeDetail({ recipe, have, missing }: { recipe: Recipe; have: Substit
 
       <Section title={stillMissing.size ? `Ingredients (${stillMissing.size} missing)` : 'Ingredients'}>
         {recipe.ingredients.map((i, n) => {
-          const isMissing = stillMissing.has(i.ingredient);
-          const shown = missing.has(i.ingredient) ? visibleSwaps(swaps, i.ingredient) : [];
+          const isMissing = isStillMissing(swaps, i.ingredient);
+          const shown = swapRows.has(n) ? visibleSwaps(swaps, i.ingredient) : [];
           return (
             <View key={`${i.ingredient}-${n}`} style={styles.ingredientBlock}>
               <View style={[styles.ingredient, isMissing && styles.missingRow]}>
@@ -112,7 +123,7 @@ function RecipeDetail({ recipe, have, missing }: { recipe: Recipe; have: Substit
           );
         })}
 
-        {missing.size > 0 && !offered && suggest.status === 'idle' && (
+        {canSuggest && (
           <Button title="Suggest substitutions" variant="secondary" onPress={suggestSubstitutions} />
         )}
         {suggest.status === 'loading' && (

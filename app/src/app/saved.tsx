@@ -1,27 +1,12 @@
 import type { Recipe } from '@fridge/shared';
-import { router, useFocusEffect, useTheme } from 'expo-router';
+import { useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { FlatList, Pressable, StyleSheet, View } from 'react-native';
+import { FlatList, StyleSheet } from 'react-native';
 
 import { Screen, T } from '@/components/ui';
 import { loadSavedRecipes } from '@/lib/savedRecipes';
+import { RecipeRow } from '@/recipes/RecipeRow';
 import { Loading } from '@/recipes/StateViews';
-
-function SavedRow({ recipe }: { recipe: Recipe }) {
-  const { colors } = useTheme();
-  return (
-    <Pressable
-      accessibilityRole="button"
-      onPress={() => router.push({ pathname: '/recipe/[id]', params: { id: recipe.id } })}
-      style={({ pressed }) => [styles.row, { borderColor: colors.border, backgroundColor: colors.card, opacity: pressed ? 0.7 : 1 }]}>
-      <T style={styles.name}>{recipe.name}</T>
-      <View style={styles.meta}>
-        <T dim>{recipe.minutes} min</T>
-        <T dim>{recipe.cuisine}</T>
-      </View>
-    </Pressable>
-  );
-}
 
 export default function SavedRecipesScreen() {
   const [saved, setSaved] = useState<Recipe[] | null>(null);
@@ -41,7 +26,7 @@ export default function SavedRecipesScreen() {
         <FlatList
           data={saved}
           keyExtractor={(r) => r.id}
-          renderItem={({ item }) => <SavedRow recipe={item} />}
+          renderItem={({ item }) => <RecipeRow id={item.id} name={item.name} minutes={item.minutes} cuisine={item.cuisine} />}
           contentContainerStyle={styles.list}
           ListEmptyComponent={<T dim style={styles.empty}>No Saved Recipes yet. Save one from its Recipe page.</T>}
         />
@@ -52,8 +37,5 @@ export default function SavedRecipesScreen() {
 
 const styles = StyleSheet.create({
   list: { padding: 16, gap: 10 },
-  row: { padding: 14, borderRadius: 12, borderWidth: StyleSheet.hairlineWidth, gap: 6 },
-  name: { fontSize: 17, fontWeight: '600' },
-  meta: { flexDirection: 'row', gap: 16 },
   empty: { textAlign: 'center', marginTop: 40 },
 });

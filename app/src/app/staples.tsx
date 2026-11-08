@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { DANGER, Screen, T } from '@/components/ui';
-import { addStaple, loadStaples, removeStaple, saveStaples } from '@/lib/kitchen';
+import { addStaple, DEFAULT_STAPLES, loadStaples, removeStaple, saveStaples } from '@/lib/kitchen';
 import { useIngredientList } from '@/lib/useIngredientList';
 import { IngredientInput } from '@/review/components';
 
@@ -11,21 +11,35 @@ function StaplesBody() {
   const { colors } = useTheme();
   const vocabulary = useIngredientList();
   const [staples, setStaples] = useState<string[] | null>(null);
+  const [problem, setProblem] = useState<string | null>(null);
 
   useEffect(() => {
-    loadStaples().then(setStaples);
+    let live = true;
+    loadStaples().then(
+      (s) => live && setStaples(s),
+      () => {
+        if (!live) return;
+        setStaples([...DEFAULT_STAPLES]);
+        setProblem('Could not load your Staples, so the defaults are shown.');
+      },
+    );
+    return () => { live = false; };
   }, []);
 
   if (!staples) return null;
 
   const update = (next: string[]) => {
     setStaples(next);
-    saveStaples(next);
+    saveStaples(next).then(
+      () => setProblem(null),
+      () => setProblem('Could not save your Staples on this device.'),
+    );
   };
 
   return (
     <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
       <T dim>Staples are things you always have. Recipe Matches never list them as missing.</T>
+      {!!problem && <T style={{ color: DANGER }}>{problem}</T>}
       <IngredientInput
         vocabulary={vocabulary}
         placeholder="Add a Staple"

@@ -2,15 +2,25 @@ import { useTheme } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
-import { ACCENT, Screen, T } from '@/components/ui';
-import { ALL_EQUIPMENT, loadEquipment, saveEquipment, toggleEquipment } from '@/lib/kitchen';
+import { ACCENT, DANGER, Screen, T } from '@/components/ui';
+import { ALL_EQUIPMENT, DEFAULT_EQUIPMENT, loadEquipment, saveEquipment, toggleEquipment } from '@/lib/kitchen';
 
 function EquipmentBody() {
   const { colors } = useTheme();
   const [equipment, setEquipment] = useState<string[] | null>(null);
+  const [problem, setProblem] = useState<string | null>(null);
 
   useEffect(() => {
-    loadEquipment().then(setEquipment);
+    let live = true;
+    loadEquipment().then(
+      (e) => live && setEquipment(e),
+      () => {
+        if (!live) return;
+        setEquipment([...DEFAULT_EQUIPMENT]);
+        setProblem('Could not load your Equipment, so the defaults are shown.');
+      },
+    );
+    return () => { live = false; };
   }, []);
 
   if (!equipment) return null;
@@ -18,12 +28,16 @@ function EquipmentBody() {
   const toggle = (item: string) => {
     const next = toggleEquipment(equipment, item);
     setEquipment(next);
-    saveEquipment(next);
+    saveEquipment(next).then(
+      () => setProblem(null),
+      () => setProblem('Could not save your Equipment on this device.'),
+    );
   };
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <T dim>Recipe Matches only use Equipment you have ticked.</T>
+      {!!problem && <T style={{ color: DANGER }}>{problem}</T>}
       {ALL_EQUIPMENT.map((item) => {
         const has = equipment.includes(item);
         return (

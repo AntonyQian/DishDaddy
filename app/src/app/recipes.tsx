@@ -1,28 +1,23 @@
 import type { RecipeMatch } from '@fridge/shared';
-import { router, useTheme } from 'expo-router';
-import { FlatList, Pressable, StyleSheet, View } from 'react-native';
+import { FlatList, StyleSheet } from 'react-native';
 
 import { CONFIRMED, Screen, T, WARN } from '@/components/ui';
 import { searchRecipes } from '@/lib/api';
 import { loadSearchRequest } from '@/recipes/available';
+import { RecipeRow } from '@/recipes/RecipeRow';
 import { Failed, Loading } from '@/recipes/StateViews';
 import { useAsync } from '@/recipes/useAsync';
 
 function MatchRow({ match }: { match: RecipeMatch }) {
-  const { colors } = useTheme();
   const n = match.missing.length;
   return (
-    <Pressable
-      accessibilityRole="button"
-      onPress={() => router.push({ pathname: '/recipe/[id]', params: { id: match.recipeId } })}
-      style={({ pressed }) => [styles.row, { borderColor: colors.border, backgroundColor: colors.card, opacity: pressed ? 0.7 : 1 }]}>
-      <T style={styles.name}>{match.name}</T>
-      <View style={styles.meta}>
-        <T style={{ color: n === 0 ? CONFIRMED : WARN, fontWeight: '600' }}>{n === 0 ? 'Nothing missing' : `${n} missing`}</T>
-        <T dim>{match.minutes} min</T>
-        <T dim>{match.cuisine}</T>
-      </View>
-    </Pressable>
+    <RecipeRow
+      id={match.recipeId}
+      name={match.name}
+      minutes={match.minutes}
+      cuisine={match.cuisine}
+      badge={<T style={{ color: n === 0 ? CONFIRMED : WARN, fontWeight: '600' }}>{n === 0 ? 'Nothing missing' : `${n} missing`}</T>}
+    />
   );
 }
 
@@ -48,8 +43,5 @@ export default function RecipeMatchesScreen() {
 
 const styles = StyleSheet.create({
   list: { padding: 16, gap: 10 },
-  row: { padding: 14, borderRadius: 12, borderWidth: StyleSheet.hairlineWidth, gap: 6 },
-  name: { fontSize: 17, fontWeight: '600' },
-  meta: { flexDirection: 'row', gap: 16 },
   empty: { textAlign: 'center', marginTop: 40 },
 });

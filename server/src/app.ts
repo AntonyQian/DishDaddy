@@ -68,7 +68,7 @@ export function createApp(deps: AppDeps) {
     }
   });
 
-  app.get('/ingredients',(c) => c.json<IngredientsResponse>({ ingredients }));
+  app.get('/ingredients', (c) => c.json<IngredientsResponse>({ ingredients }));
 
   // multipart/form-data with one or more "photos" files, in Scan order.
   app.post('/scan', async (c) => {
