@@ -75,7 +75,7 @@ describe('filterRecipes on the sample CSV', () => {
     const r = (await run({ maxCategoryShare: 1 })).find((x) => x.id === '101')!;
     expect(r).toMatchObject({
       name: 'Cheese Omelette', imageUrl: 'https://img.example/a.jpg', servings: 1, minutes: 10, category: 'Breakfast',
-      rating: 4.8, reviewCount: 120, proteinGrams: 24.5,
+      rating: 4.8, reviewCount: 120, proteinGrams: 24.5, calories: 480.4,
       ingredients: [{ name: 'egg', quantity: '3' }, { name: 'cheddar cheese', quantity: '40 g' }, { name: 'butter', quantity: '1 tbsp' }, { name: 'salt', quantity: '1 pinch' }],
     });
     expect(r.steps[0]).toBe('Beat the eggs with "salt".');
@@ -85,6 +85,8 @@ describe('filterRecipes on the sample CSV', () => {
     const all = await run({ maxCategoryShare: 1 });
     expect(all.find((x) => x.id === '102')!.proteinGrams).toBe(8);
     expect(all.find((x) => x.id === '111')!.proteinGrams).toBeNull();
+    expect(all.find((x) => x.id === '102')!.calories).toBe(310);
+    expect(all.find((x) => x.id === '111')!.calories).toBeNull();
   });
 
   it('keeps newlines inside a step, single-value vectors and missing quantities', async () => {
@@ -103,7 +105,7 @@ describe('filterRecipes on the sample CSV', () => {
 
 describe('selectTop', () => {
   const r = (id: string, rating: number, reviewCount: number, category = 'x'): RawRecipe => ({
-    id, name: id, imageUrl: 'u', servings: 1, minutes: 5, category, rating, reviewCount, proteinGrams: null, ingredients: [], steps: [],
+    id, name: id, imageUrl: 'u', servings: 1, minutes: 5, category, rating, reviewCount, proteinGrams: null, calories: null, ingredients: [], steps: [],
   });
 
   it('ranks by rating weighted by how many reviews back it', () => {

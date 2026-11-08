@@ -6,7 +6,7 @@ import type { RawRecipe } from './filterRecipes';
 function raw(id: string, names: string[], extra: Partial<RawRecipe> = {}): RawRecipe {
   return {
     id, name: `Recipe ${id}`, imageUrl: 'https://img/x.jpg', servings: 4, minutes: 30, category: 'Dinner', rating: 4.8, reviewCount: 50,
-    proteinGrams: null, ingredients: names.map((name, i) => ({ name, quantity: String(i + 1) })), steps: ['Mix.', 'Bake.'], ...extra,
+    proteinGrams: null, calories: null, ingredients: names.map((name, i) => ({ name, quantity: String(i + 1) })), steps: ['Mix.', 'Bake.'], ...extra,
   };
 }
 
@@ -48,6 +48,16 @@ describe('buildRecipes', () => {
       steps: ['Mix.', 'Bake.'],
     });
     expect(recipes[0].ingredients[0]).toEqual({ ingredient: 'garlic', quantity: '1', original: 'Garlic Cloves' });
+  });
+
+  it('carries nutrition per serving, rounded, and leaves it out when the source has none', async () => {
+    const { steps } = fakeSteps({});
+    const { recipes } = await buildRecipes([
+      raw('1', ['a', 'b', 'c', 'd'], { proteinGrams: 24.6, calories: 480.4 }),
+      raw('2', ['a', 'b', 'c', 'd']),
+    ], steps);
+    expect(recipes[0]).toMatchObject({ proteinGrams: 25, calories: 480 });
+    expect('calories' in recipes[1] || 'proteinGrams' in recipes[1]).toBe(false);
   });
 
   it('keeps only known Equipment, once each, and falls back to Other for an unknown cuisine', async () => {
