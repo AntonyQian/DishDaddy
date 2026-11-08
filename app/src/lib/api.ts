@@ -1,3 +1,4 @@
+import { File } from 'expo-file-system';
 import { FIXTURE_INGREDIENTS, type HealthResponse, type IngredientsResponse, type ScanResult } from '@fridge/shared';
 import type { CapturedPhoto } from '@/scan/types';
 import { MOCK_SCAN, SERVER_URL } from './config';
@@ -15,8 +16,12 @@ export async function postScan(photos: CapturedPhoto[]): Promise<ScanResult> {
 
   const body = new FormData();
   photos.forEach((p, i) => {
-    // React Native's FormData takes a file descriptor object in place of a Blob.
-    body.append('photos', { uri: p.uri, name: `photo-${i + 1}.jpg`, type: 'image/jpeg' } as unknown as Blob);
+    // Expo's fetch (SDK 52+) does not accept React Native's { uri, name, type } file
+    // object. It takes a Blob, or any object with bytes(): read the photo with
+    // expo-file-system and give the part an explicit name and type for the server.
+    const file = new File(p.uri);
+    const part = { name: `photo-${i + 1}.jpg`, type: 'image/jpeg', bytes: () => file.bytes() };
+    body.append('photos', part as unknown as Blob);
   });
 
   const controller = new AbortController();
