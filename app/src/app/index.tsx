@@ -38,6 +38,7 @@ function HomeScreenBody() {
       {scan.photos.length > 0 && (
         <Button title={`Continue Scan (${scan.photos.length} photos)`} variant="secondary" onPress={() => router.push('/scan')} />
       )}
+      <Button title="Saved Recipes" variant="secondary" onPress={() => router.push('/saved')} />
       <Button title="Staples" variant="secondary" onPress={() => router.push('/staples')} />
       <Button title="Equipment" variant="secondary" onPress={() => router.push('/equipment')} />
 

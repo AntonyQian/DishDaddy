@@ -8,6 +8,7 @@ import { getRecipe } from '@/lib/api';
 import { loadStaples } from '@/lib/kitchen';
 import { loadLatestScan } from '@/lib/latestScan';
 import { missingIngredients } from '@/recipes/recipeMatch';
+import { SaveToggle } from '@/recipes/SaveToggle';
 import { Failed, Loading } from '@/recipes/StateViews';
 import { useAsync } from '@/recipes/useAsync';
 
@@ -34,6 +35,7 @@ function RecipeDetail({ recipe, missing }: { recipe: Recipe; missing: ReadonlySe
         {recipe.cuisine} · {recipe.minutes} min · serves {recipe.servings}
         {recipe.highProtein ? ' · high protein' : ''}
       </T>
+      <SaveToggle recipe={recipe} />
 
       <Section title={missing.size ? `Ingredients (${missing.size} missing)` : 'Ingredients'}>
         {recipe.ingredients.map((i, n) => {
