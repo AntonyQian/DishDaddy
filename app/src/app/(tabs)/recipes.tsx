@@ -4,6 +4,7 @@ import { useCallback, useRef, useState } from 'react';
 import { FlatList, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 
 import { AppBar } from '@/components/AppBar';
+import { Backdrop } from '@/components/Backdrop';
 import { Chip, EmptyState, Icon, T } from '@/components/ui';
 import { searchRecipes } from '@/lib/api';
 import { loadLatestScan } from '@/lib/latestScan';
@@ -78,6 +79,7 @@ export default function RecipeMatchesScreen() {
 
   return (
     <SafeAreaView style={styles.screen} edges={['top']}>
+      <Backdrop />
       <AppBar />
       {state.status === 'loading' && <RecipeListSkeleton />}
       {state.status === 'error' && <Failed title="Could not find recipes" message={state.message} onRetry={retry} />}
@@ -117,7 +119,7 @@ export default function RecipeMatchesScreen() {
               <View style={styles.hero}>
                 <View style={styles.heroText}>
                   <View style={styles.heroBadge}>
-                    <Icon name="check-circle" size={13} color={COLORS.primary} />
+                    <Icon name="check-circle" size={13} color={COLORS.primaryText} />
                     <T style={styles.heroBadgeText}>{counts.ready} In Stock</T>
                   </View>
                   <T style={styles.heroTitle}>Ready to cook</T>
@@ -128,7 +130,7 @@ export default function RecipeMatchesScreen() {
                   </T>
                 </View>
                 <View style={styles.heroIcon}>
-                  <Icon name="soup-kitchen" size={40} color={COLORS.primary} />
+                  <Icon name="soup-kitchen" size={40} color={COLORS.primaryText} />
                 </View>
               </View>
 
@@ -179,12 +181,12 @@ const styles = StyleSheet.create({
   },
   heroText: { flex: 1, gap: 4 },
   heroBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, alignSelf: 'flex-start', backgroundColor: COLORS.primarySoft, borderRadius: RADIUS.full, paddingHorizontal: 10, paddingVertical: 3 },
-  heroBadgeText: { color: COLORS.primary, fontSize: 11, fontWeight: '700' },
+  heroBadgeText: { color: COLORS.primaryText, fontSize: 11, fontWeight: '700' },
   heroTitle: { fontSize: 22, fontWeight: '700', lineHeight: 28 },
   heroSub: { fontSize: 12 },
   heroIcon: { width: 80, height: 80, borderRadius: 40, backgroundColor: COLORS.chipBg, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: COLORS.border },
   filterHead: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   sectionTitle: { fontSize: 18, fontWeight: '700' },
-  clear: { color: COLORS.primary, fontSize: 13, fontWeight: '600' },
+  clear: { color: COLORS.primaryText, fontSize: 13, fontWeight: '600' },
   filters: { gap: 8, paddingRight: 20 },
 });

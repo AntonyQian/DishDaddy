@@ -21,7 +21,7 @@ export function IngredientBar({ have, total }: { have: number; total: number }) 
 const styles = StyleSheet.create({
   wrap: { flex: 1, gap: 6, paddingRight: 12 },
   label: { fontSize: 11, fontFamily: FONT.bold, color: COLORS.muted },
-  count: { fontSize: 11, fontFamily: FONT.extra, color: COLORS.primary },
+  count: { fontSize: 11, fontFamily: FONT.extra, color: COLORS.primaryText },
   track: { height: 5, borderRadius: 3, backgroundColor: COLORS.chipBg, overflow: 'hidden' },
   fill: { height: 5, borderRadius: 3, backgroundColor: COLORS.primary },
 });

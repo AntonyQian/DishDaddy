@@ -5,6 +5,7 @@ import { ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AppBar } from '@/components/AppBar';
+import { Backdrop } from '@/components/Backdrop';
 import { Button, EmptyState, T } from '@/components/ui';
 import { scaleStep, spaceFractions } from '@/recipes/scale';
 import { Failed, Loading } from '@/recipes/StateViews';
@@ -73,6 +74,7 @@ export default function CookModeScreen() {
 
   return (
     <SafeAreaView style={styles.screen} edges={['top']}>
+      <Backdrop />
       <AppBar subtitle="Cook Mode" />
       {state.status === 'loading' && <Loading label="Getting your recipe…" />}
       {state.status === 'error' && <Failed title="Could not load the recipe" message={state.message} onRetry={retry} />}
@@ -91,7 +93,7 @@ export default function CookModeScreen() {
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: COLORS.background },
   body: { flex: 1, paddingHorizontal: 20, paddingTop: 12, paddingBottom: 130, gap: 20 },
-  eyebrow: { fontSize: 11, fontWeight: '700', letterSpacing: 1, color: COLORS.primary },
+  eyebrow: { fontSize: 11, fontWeight: '700', letterSpacing: 1, color: COLORS.primaryText },
   recipeName: { fontSize: 24, fontWeight: '800', lineHeight: 30, letterSpacing: -0.4 },
   forServings: { fontSize: 13, fontWeight: '600' },
   progressText: { fontSize: 13, fontWeight: '700' },
@@ -99,7 +101,7 @@ const styles = StyleSheet.create({
   fill: { height: 8, borderRadius: 4, backgroundColor: COLORS.primary },
   card: { flex: 1, backgroundColor: COLORS.card, borderRadius: RADIUS.lg, borderWidth: 1, borderColor: COLORS.border },
   stepNo: { width: 40, height: 40, borderRadius: 20, backgroundColor: COLORS.primarySoft, alignItems: 'center', justifyContent: 'center' },
-  stepNoText: { color: COLORS.primary, fontSize: 18, fontWeight: '800' },
+  stepNoText: { color: COLORS.primaryText, fontSize: 18, fontWeight: '800' },
   stepText: { fontSize: 22, lineHeight: 32, fontWeight: '600' },
   buttons: { flexDirection: 'row', gap: 12 },
   done: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 32, gap: 12, paddingBottom: 130 },

@@ -1,20 +1,20 @@
 import {
   PlusJakartaSans_500Medium, PlusJakartaSans_600SemiBold, PlusJakartaSans_700Bold, PlusJakartaSans_800ExtraBold, useFonts,
 } from '@expo-google-fonts/plus-jakarta-sans';
-import { DefaultTheme, Stack, ThemeProvider } from 'expo-router';
+import { DarkTheme, Stack, ThemeProvider } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 
 import { ScanProvider } from '@/scan/ScanContext';
 import { COLORS } from '@/theme';
 
-// The design is light only, so screens that read the navigation theme get these colours too.
+// The app is dark only, so screens that read the navigation theme get these colours too.
 const THEME = {
-  ...DefaultTheme,
+  ...DarkTheme,
   colors: {
-    ...DefaultTheme.colors,
+    ...DarkTheme.colors,
     primary: COLORS.primary,
     background: COLORS.background,
-    card: COLORS.card,
+    card: COLORS.floating,
     text: COLORS.text,
     border: COLORS.border,
   },
@@ -29,7 +29,7 @@ export default function RootLayout() {
 
   return (
     <ThemeProvider value={THEME}>
-      <StatusBar style="dark" />
+      <StatusBar style="light" />
       <ScanProvider>
         <Stack screenOptions={{ headerShown: false }}>
           <Stack.Screen name="(tabs)" />
