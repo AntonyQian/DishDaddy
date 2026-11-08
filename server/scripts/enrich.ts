@@ -45,6 +45,8 @@ export interface Steps {
   consolidate(names: string[]): Promise<Record<string, string>>;
   /** Equipment and cuisine per recipe id. */
   enrich(batch: RawRecipe[]): Promise<Record<string, Enrichment>>;
+  /** The amount of each ingredient with its unit ("1/2 cup", "2 tbsp"), per recipe id, in the recipe's ingredient order. */
+  amounts(batch: RawRecipe[]): Promise<Record<string, string[]>>;
 }
 
 export interface BuildReport {
@@ -74,6 +76,75 @@ export const OVERRIDES: [RegExp, string][] = [
   [/\blemon[- ]pepper\b/, 'lemon pepper'],
   [/\b(red pepper|chil+[ie]|chilli) flakes\b/, 'chilli flakes'],
 ];
+
+const FRACTIONS = '½¼¾⅓⅔';
+const NUMBER = String.raw`((?:\d|[${FRACTIONS}])(?:[\d\s/.\-–${FRACTIONS}]*(?:\d|[${FRACTIONS}]))?)`;
+const UNIT_SHORT: [string, string][] = [
+  ['tablespoons?|tbsps?|tbs|tbl', 'tbsp'],
+  ['teaspoons?|tsps?', 'tsp'],
+  ['ounces?', 'oz'],
+  ['pounds?|lbs?', 'lb'],
+  ['minutes?|mins?', 'min'],
+  ['hours?|hrs?', 'hr'],
+  ['seconds?|secs?', 'sec'],
+].map(([words, short]) => [words, short] as [string, string]);
+
+/**
+ * Makes a step's units short and consistent: "2 tablespoons" is "2 tbsp", "35 minutes" is "35 min",
+ * and an oven temperature in Fahrenheit gets its Celsius: "450F" is "450°F (230°C)". Only a number
+ * followed by a unit is changed, and the recipe's wording is otherwise left alone.
+ */
+export function tidyStep(step: string): string {
+  let out = step.replace(/[ \t]{2,}/g, ' ').trim();
+  for (const [words, short] of UNIT_SHORT) {
+    out = out.replace(new RegExp(`${NUMBER}\\s*(?:${words})\\b`, 'gi'), `$1 ${short}`);
+  }
+  // a bare "350°" is Fahrenheit: these recipes are American
+  out = out.replace(/(\d{3})\s*[°º](?!\s*[CFcf]\b)/g, (whole, n: string) => (Number(n) >= 100 && Number(n) <= 600 ? `${n}°F` : whole));
+  out = out.replace(/(\d{3})\s+degrees?\b(?!\s*[CcFf]\b)/g, (whole, n: string) => (Number(n) >= 100 && Number(n) <= 600 ? `${n}°F` : whole));
+  return out.replace(/(\d{2,3})\s*(?:°|º|degrees?)?\s*F\b(?!\s*\(\s*\d+\s*°?\s*C)/g, (whole, n: string) => {
+    const f = Number(n);
+    return f >= 100 && f <= 600 ? `${f}°F (${Math.round(((f - 32) * 5) / 9 / 5) * 5}°C)` : whole;
+  });
+}
+
+/** The number in a quantity such as "2", "1/2", "2 1/4" or "2-3" (a range counts as its larger end). */
+function quantityValue(quantity: string): number {
+  const end = quantity.split(/[-–]/).pop() ?? quantity;
+  return end.trim().split(/\s+/).reduce((sum, part) => {
+    const [a, b] = part.split('/').map(Number);
+    return sum + (b ? a / b : a || 0);
+  }, 0);
+}
+
+const PLURALS: Record<string, string> = {
+  cup: 'cups', clove: 'cloves', can: 'cans', package: 'packages', stick: 'sticks', slice: 'slices', sprig: 'sprigs', bunch: 'bunches',
+};
+const SINGULARS = Object.fromEntries(Object.entries(PLURALS).map(([one, many]) => [many, one]));
+
+/** "2 cup" is "2 cups" and "1 cups" is "1 cup": the unit agrees with the number. */
+function agree(amount: string, quantity: string): string {
+  const [, rest, unit] = /^(.*\s)(\S+)$/.exec(amount) ?? [];
+  if (!unit) return amount;
+  const word = unit.toLowerCase();
+  const one = SINGULARS[word] ?? (word in PLURALS ? word : undefined);
+  return one ? `${rest}${quantityValue(quantity) > 1 ? PLURALS[one] : one}` : amount;
+}
+
+/**
+ * Each ingredient's amount for display. The model's amount is used only if it keeps the dataset's
+ * quantity exactly and just adds a short unit; otherwise the bare quantity stays, so the model can
+ * add units but never change how much.
+ */
+export function mergeAmounts(ingredients: readonly { quantity: string }[], amounts: readonly string[] | undefined): string[] {
+  const usable = amounts && amounts.length === ingredients.length ? amounts : undefined;
+  return ingredients.map((ing, i) => {
+    const amount = usable?.[i]?.trim();
+    if (!amount || amount.length > 28) return ing.quantity;
+    if (ing.quantity === '') return amount;
+    return amount === ing.quantity || amount.startsWith(`${ing.quantity} `) ? agree(amount, ing.quantity) : ing.quantity;
+  });
+}
 
 const tidy = (s: string) => s.trim().toLowerCase().replace(/\s+/g, ' ');
 
@@ -141,20 +212,27 @@ export async function buildRecipes(
     return result;
   })));
 
+  // Units for each ingredient's amount.
+  const enrichedRecipes = survivors.filter((r) => enriched[r.id]);
+  log(`working out amounts for ${enrichedRecipes.length} recipes`);
+  const amountBatches = await pool(chunk(enrichedRecipes, recipeBatch), concurrency, (b) => steps.amounts(b));
+  const amountsById: Record<string, string[]> = Object.assign({}, ...amountBatches);
+
   const recipes: Recipe[] = [];
   for (const r of survivors) {
     const e: Enrichment | undefined = enriched[r.id];
     if (!e) continue;
+    const amounts = mergeAmounts(r.ingredients, amountsById[r.id]);
     recipes.push({
       id: `fd-${r.id}`,
       name: r.name,
       imageUrl: r.imageUrl,
       servings: r.servings,
-      ingredients: r.ingredients.map((i) => ({ ingredient: mapping.get(tidy(i.name))!, quantity: i.quantity, original: i.name.trim() })),
+      ingredients: r.ingredients.map((i, n) => ({ ingredient: mapping.get(tidy(i.name))!, quantity: amounts[n], original: i.name.trim() })),
       equipment: [...new Set(e.equipment.map((x) => EQUIPMENT_ALIASES[tidy(x)] ?? tidy(x)))].filter((x) => (EQUIPMENT as readonly string[]).includes(x)),
       cuisine: (CUISINES as readonly string[]).find((c) => c.toLowerCase() === tidy(e.cuisine)) ?? 'Other',
       minutes: r.minutes,
-      steps: r.steps,
+      steps: r.steps.map(tidyStep),
       highProtein: highProtein(r.proteinGrams),
       ...(r.calories !== null && { calories: Math.round(r.calories) }),
       ...(r.proteinGrams !== null && { proteinGrams: Math.round(r.proteinGrams) }),

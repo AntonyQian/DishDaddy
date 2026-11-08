@@ -6,6 +6,7 @@ import { join } from 'node:path';
 import { GoogleGenAI } from '@google/genai';
 import { FIXTURE_INGREDIENTS } from '@fridge/shared';
 import { CUISINES, MODEL_EQUIPMENT, type Steps } from './enrich';
+import type { RawRecipe } from './filterRecipes';
 
 const tidy = (s: string) => s.trim().toLowerCase().replace(/\s+/g, ' ');
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
@@ -76,6 +77,11 @@ export function createGeminiSteps(options: {
         recipes?: { id: string; equipment: string[]; cuisine: string }[];
       };
       return Object.fromEntries((json.recipes ?? []).map((r) => [r.id, { equipment: r.equipment ?? [], cuisine: r.cuisine ?? 'Other' }]));
+    },
+
+    async amounts(batch) {
+      const json = (await askJson(AMOUNTS_PROMPT(batch), AMOUNTS_SCHEMA)) as { recipes?: { id: string; amounts: string[] }[] };
+      return Object.fromEntries((json.recipes ?? []).map((r) => [r.id, r.amounts ?? []]));
     },
   };
 }
@@ -161,3 +167,40 @@ Recipes:
 ${JSON.stringify(batch.map((r) => ({ id: r.id, name: r.name, ingredients: r.ingredients.map((i) => i.name), steps: r.steps.join(' ').slice(0, 1200) })))}
 
 Return every recipe once, with "id" exactly as given.`;
+
+const AMOUNTS_SCHEMA = {
+  type: 'object',
+  properties: {
+    recipes: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: { id: { type: 'string' }, amounts: { type: 'array', items: { type: 'string' } } },
+        required: ['id', 'amounts'],
+      },
+    },
+  },
+  required: ['recipes'],
+};
+
+// The dataset gives each ingredient's quantity as a bare number ("1/2") with the unit stripped out.
+// The unit is worked out here from the ingredient and from the recipe's own steps, which often say it.
+const AMOUNTS_PROMPT = (batch: RawRecipe[]) => `Each recipe below lists its ingredients with a bare quantity whose unit was lost ("1/2", "3", "1 1/2").
+Write each ingredient's amount as "<quantity> <unit>", choosing the unit a home cook would use.
+
+Rules:
+- Copy the quantity exactly as given, as the first part of the amount. Never change, convert, round or reword the number.
+- Add the most likely unit: cup, tbsp, tsp, g, kg, ml, l, oz, lb, can, clove, slice, large, medium, small, stick, bunch, sprig, pinch, dash, package. For items you count, use a size or the item ("3 large", "2 cloves", "1 can") or just the number if no word is natural ("2" for 2 carrots).
+- The recipe's steps often name the amount ("add 2 tablespoons of oil"): follow them. Otherwise decide from the ingredient and the number: 1/4 of butter is "1/4 cup", 2 of olive oil is "2 tbsp", 1/2 of salt is "1/2 tsp", 2 of garlic is "2 cloves", 1 of chicken breast is "1 lb" only if the recipe feeds several, else "1 large".
+- Use these short forms: tbsp, tsp, oz, lb, g, ml. Keep it to a few words.
+- If the quantity is empty, write a short phrase such as "to taste", "as needed" or "1 pinch".
+- Return one amount for every ingredient, in the same order, so the list is the same length as the ingredients.
+
+Recipes:
+${JSON.stringify(batch.map((r) => ({
+  id: r.id,
+  name: r.name,
+  servings: r.servings,
+  ingredients: r.ingredients.map((i) => ({ wording: i.name, quantity: i.quantity })),
+  steps: r.steps.join(' ').slice(0, 1500),
+})))}`;
