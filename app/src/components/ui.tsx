@@ -6,6 +6,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { Backdrop } from '@/components/Backdrop';
 import { goBack } from '@/lib/navigation';
 import { COLORS, FONT, RADIUS } from '@/theme';
 
@@ -95,7 +96,7 @@ export function RoundButton({ icon, label, onPress, active }: { icon: IconName; 
       onPress={onPress}
       hitSlop={6}
       style={({ pressed }) => [styles.round, active && { backgroundColor: COLORS.primarySoft }, pressed && { transform: [{ scale: 0.93 }] }]}>
-      <Icon name={icon} size={22} color={active ? COLORS.primary : COLORS.text} />
+      <Icon name={icon} size={22} color={active ? COLORS.primaryText : COLORS.text} />
     </Pressable>
   );
 }
@@ -110,6 +111,7 @@ export function Screen({ title, eyebrow, back, right, children }: {
 }) {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: COLORS.background }} edges={['top']}>
+      <Backdrop />
       <View style={styles.header}>
         <View style={styles.headerSide}>
           {back && <RoundButton icon="arrow-back" label="Back" onPress={() => goBack()} />}
@@ -155,7 +157,7 @@ type Tone = 'solid' | 'ready' | 'ok' | 'protein' | 'warn' | 'neutral';
 
 const BADGE: Record<Tone, { bg: string; fg: string }> = {
   solid: { bg: COLORS.primary, fg: COLORS.onPrimary },
-  ready: { bg: COLORS.primarySoft, fg: COLORS.primary },
+  ready: { bg: COLORS.primarySoft, fg: COLORS.primaryText },
   ok: { bg: COLORS.okSoft, fg: COLORS.ok },
   protein: { bg: COLORS.chipBg, fg: COLORS.gold },
   warn: { bg: COLORS.warnSoft, fg: COLORS.warnText },
@@ -188,10 +190,10 @@ export function EmptyState({ title, text, action }: { title: string; text: strin
 }
 
 const styles = StyleSheet.create({
-  header: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 20, paddingVertical: 8, backgroundColor: COLORS.background },
+  header: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 20, paddingVertical: 8 },
   headerSide: { width: 48, justifyContent: 'center' },
   headerCenter: { flex: 1, alignItems: 'center' },
-  eyebrow: { fontFamily: FONT.bold, fontSize: 11, letterSpacing: 0.8, color: COLORS.primary, textTransform: 'uppercase' },
+  eyebrow: { fontFamily: FONT.bold, fontSize: 11, letterSpacing: 0.8, color: COLORS.primaryText, textTransform: 'uppercase' },
   headerTitle: { fontSize: 18, fontFamily: FONT.bold, color: COLORS.text },
   round: {
     width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center',

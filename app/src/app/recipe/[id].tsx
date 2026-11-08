@@ -134,11 +134,11 @@ function RecipeDetail({ recipe, have, missing }: { recipe: Recipe; have: Substit
               <T dim style={styles.statLabel}>Servings</T>
               <View style={styles.stepper}>
                 <Pressable accessibilityRole="button" accessibilityLabel="Fewer servings" onPress={() => changeServings(-1)} hitSlop={8} style={styles.stepButton}>
-                  <Icon name="remove" size={18} color={COLORS.primary} />
+                  <Icon name="remove" size={18} color={COLORS.primaryText} />
                 </Pressable>
                 <T style={styles.stepValue}>{servings}</T>
                 <Pressable accessibilityRole="button" accessibilityLabel="More servings" onPress={() => changeServings(1)} hitSlop={8} style={styles.stepButton}>
-                  <Icon name="add" size={18} color={COLORS.primary} />
+                  <Icon name="add" size={18} color={COLORS.primaryText} />
                 </Pressable>
               </View>
             </View>
@@ -186,7 +186,7 @@ function RecipeDetail({ recipe, have, missing }: { recipe: Recipe; have: Substit
           {canSuggest && <Button title="Suggest substitutions" variant="secondary" onPress={suggestSubstitutions} />}
           {suggest.status === 'loading' && (
             <View style={styles.inline}>
-              <ActivityIndicator color={COLORS.primary} />
+              <ActivityIndicator color={COLORS.primaryText} />
               <T dim>Finding substitutions…</T>
             </View>
           )}

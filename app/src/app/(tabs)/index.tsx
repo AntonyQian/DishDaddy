@@ -7,6 +7,7 @@ import { Alert, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AppBar } from '@/components/AppBar';
+import { Backdrop } from '@/components/Backdrop';
 import { Badge, Chip, Icon, T } from '@/components/ui';
 import { getHealth, searchRecipes } from '@/lib/api';
 import { MOCK_SCAN, SERVER_URL } from '@/lib/config';
@@ -63,7 +64,7 @@ function LinkRow({ icon, title, caption, to }: { icon: 'kitchen' | 'bookmark' | 
   return (
     <Pressable accessibilityRole="button" onPress={() => router.push(to)} style={({ pressed }) => [styles.link, pressed && { opacity: 0.9 }]}>
       <View style={styles.linkIcon}>
-        <Icon name={icon} size={20} color={COLORS.primary} />
+        <Icon name={icon} size={20} color={COLORS.primaryText} />
       </View>
       <View style={{ flex: 1 }}>
         <T style={styles.linkTitle}>{title}</T>
@@ -163,12 +164,13 @@ export default function KitchenScreen() {
 
   return (
     <SafeAreaView style={styles.screen} edges={['top']}>
+      <Backdrop />
       <AppBar title="Hi, Chef!" />
       <View style={{ flex: 1 }}>
       <ScrollView contentContainerStyle={styles.content}>
         <View style={{ gap: 4 }}>
           <View style={styles.eyebrow}>
-            <Icon name="kitchen" size={15} color={COLORS.primary} />
+            <Icon name="kitchen" size={15} color={COLORS.primaryText} />
             <T style={styles.eyebrowText}>Smart Pantry</T>
           </View>
           <T style={styles.h1}>What are we cooking today?</T>
@@ -229,7 +231,7 @@ export default function KitchenScreen() {
         {suggestion && (
           <View style={styles.chef}>
             <View style={styles.chefIcon}>
-              <Icon name="lightbulb" size={20} color={COLORS.primary} />
+              <Icon name="lightbulb" size={20} color={COLORS.primaryText} />
             </View>
             <View style={{ flex: 1 }}>
               <T style={styles.chefTitle}>Chef Suggestion</T>
@@ -285,7 +287,7 @@ const styles = StyleSheet.create({
   heroTitle: { fontSize: 22, fontWeight: '700', color: COLORS.onPrimary, marginTop: 2 },
   heroText: { fontSize: 12, color: COLORS.onPrimaryMuted, marginTop: 4 },
   heroRow: { flexDirection: 'row', alignItems: 'center', gap: 12, marginTop: 16 },
-  scanButton: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: COLORS.card, borderRadius: RADIUS.full, paddingHorizontal: 16, paddingVertical: 9 },
+  scanButton: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: '#FFFFFF', borderRadius: RADIUS.full, paddingHorizontal: 16, paddingVertical: 9 },
   scanButtonText: { color: COLORS.primary, fontSize: 13, fontWeight: '700' },
   heroCount: { fontSize: 11, fontWeight: '700', color: COLORS.onPrimaryMuted },
   continue: { fontSize: 12, fontWeight: '700', color: COLORS.onPrimary },
@@ -306,7 +308,7 @@ const styles = StyleSheet.create({
     shadowColor: '#000', shadowOpacity: 0.2, shadowRadius: 12, shadowOffset: { width: 0, height: 4 }, elevation: 8,
   },
   toastText: { flex: 1, color: COLORS.inverseText, fontSize: 14, fontWeight: '600', textTransform: 'capitalize' },
-  toastUndo: { color: '#BFC2FF', fontSize: 14, fontWeight: '800' },
+  toastUndo: { color: COLORS.primaryText, fontSize: 14, fontWeight: '800' },
   tilePicture: { alignItems: 'center', paddingVertical: 4 },
   tileCircle: { width: PICTURE, height: PICTURE, borderRadius: RADIUS.lg, backgroundColor: COLORS.surfaceLow, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
   tileName: { fontSize: 15, fontWeight: '700', textTransform: 'capitalize', paddingHorizontal: 4 },

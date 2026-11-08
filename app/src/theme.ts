@@ -1,36 +1,40 @@
-// Design tokens from the Stitch project "Remix of DishDaddy" (indigo on lavender, Plus Jakarta Sans).
-// Values come straight from that design's Tailwind config, so a screen built here matches its screenshot.
+// Design tokens: the website's black premium look (near-black, indigo glow, frosted cards), in Plus Jakarta Sans.
+// Token names are unchanged from the earlier light design, so every screen picks the new look up from here.
 
 export const COLORS = {
-  // surfaces
-  background: '#FBF8FF',
-  card: '#FFFFFF', // surface-container-lowest
-  surfaceLow: '#F5F2FB', // surface-container-low
-  chipBg: '#EFECF5', // surface-container
-  surfaceHigh: '#EAE7EF', // surface-container-high
-  border: '#E8E7EF', // outline-variant at about 30%
-  outline: '#767685',
+  // surfaces: near-black with frosted, translucent cards
+  background: '#050507',
+  card: 'rgba(255,255,255,0.07)',
+  surfaceLow: 'rgba(255,255,255,0.05)',
+  chipBg: 'rgba(255,255,255,0.10)',
+  surfaceHigh: 'rgba(255,255,255,0.15)',
+  /** Opaque, for things that float over scrolling content (tab bar, toast). */
+  floating: '#101018',
+  border: 'rgba(255,255,255,0.12)',
+  outline: '#6E6E84',
   // text
-  text: '#1B1B21', // on-surface
-  muted: '#464653', // on-surface-variant
+  text: '#F5F5FA',
+  muted: '#A3A3B8',
   // brand
   primary: '#474DC5',
   primaryContainer: '#6067DF',
   onPrimary: '#FFFFFF',
-  onPrimaryMuted: '#E0E0FF', // primary-fixed
-  primarySoft: '#E0E0FF', // primary-fixed
-  // states. "In stock" is primary in the design; missing uses the tertiary terracotta.
-  ok: '#474DC5',
-  okSoft: '#E0E0FF',
-  okBorder: '#BFC2FF',
-  warnText: '#9B3E2B',
-  warnSoft: '#FFDAD3',
-  warnBorder: '#FFB4A4',
-  danger: '#BA1A1A',
-  dangerSoft: '#FFDAD6',
-  gold: '#775A00', // secondary
-  inverse: '#303036',
-  inverseText: '#F2EFF8',
+  onPrimaryMuted: '#E0E0FF',
+  primarySoft: 'rgba(96,103,223,0.30)',
+  /** Brand colour for text and icons on black, where #474DC5 itself is too dark to read. */
+  primaryText: '#BFC2FF',
+  // states. "In stock" is indigo; missing uses the ember orange.
+  ok: '#BFC2FF',
+  okSoft: 'rgba(96,103,223,0.30)',
+  okBorder: 'rgba(191,194,255,0.40)',
+  warnText: '#FF9B85',
+  warnSoft: 'rgba(255,122,89,0.16)',
+  warnBorder: 'rgba(255,122,89,0.45)',
+  danger: '#FF8A80',
+  dangerSoft: 'rgba(255,90,90,0.16)',
+  gold: '#FCCF5A',
+  inverse: '#1E1E2A',
+  inverseText: '#F5F5FA',
 } as const;
 
 /** Corner radii: the design uses 1rem for default, 2rem for cards, 3rem for hero and pantry tiles. */
