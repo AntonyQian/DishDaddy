@@ -6,6 +6,7 @@ import { motion } from 'framer-motion';
 import { Clock, Flame, Search, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
+import { BookmarkButton } from '@/components/BookmarkButton';
 import { BowlScene } from '@/components/three/scenes';
 import { CountUp } from '@/components/ui/CountUp';
 import { GlowButton } from '@/components/ui/GlowButton';
@@ -16,6 +17,7 @@ import { searchRecipes } from '@/lib/api';
 import { cn } from '@/lib/cn';
 import { gsap, ScrollTrigger, scrollState } from '@/lib/gsap';
 import { useKitchen } from '@/lib/kitchen';
+import { useEquipment, useStaples } from '@/lib/usePrefs';
 import { applyFilters, countFilters, FILTER_LABELS, ingredientCounts, matchesQuery, type MatchFilter } from '@/lib/matchFilters';
 
 const FILTERS = Object.keys(FILTER_LABELS) as MatchFilter[];
@@ -35,6 +37,7 @@ function RecipeCard({ m }: { m: RecipeMatch }) {
           <span className={cn('absolute left-4 top-4 rounded-full px-3 py-1.5 text-xs font-extrabold uppercase tracking-wider backdrop-blur-md', ready ? 'bg-brand/80 text-white' : 'bg-white/15 text-white')}>
             {ready ? 'In stock' : `Missing ${m.missing.length}`}
           </span>
+          <BookmarkButton recipe={m.recipeId} className="absolute right-4 top-4" />
           <span className="absolute bottom-4 right-4 flex items-center gap-1.5 rounded-full bg-black/55 px-3 py-1.5 text-xs font-bold backdrop-blur-md">
             <Clock className="size-3.5" /> {m.minutes} min
           </span>
@@ -66,6 +69,8 @@ function RecipeCard({ m }: { m: RecipeMatch }) {
 
 export default function RecipesPage() {
   const { items } = useKitchen();
+  const [staples] = useStaples();
+  const [equipment] = useEquipment();
   const [matches, setMatches] = useState<RecipeMatch[] | null>(null);
   const [error, setError] = useState(false);
   const [active, setActive] = useState<ReadonlySet<MatchFilter>>(new Set());
@@ -77,9 +82,9 @@ export default function RecipesPage() {
     if (items === null) return;
     if (items.length === 0) return setMatches([]);
     let live = true;
-    searchRecipes(items).then((m) => live && (setMatches(m), setError(false)), () => live && setError(true));
+    searchRecipes(items, staples, equipment).then((m) => live && (setMatches(m), setError(false)), () => live && setError(true));
     return () => { live = false; };
-  }, [items]);
+  }, [items, staples, equipment]);
 
   const counts = countFilters(matches ?? []);
   const shown = (matches ? applyFilters(matches, active).filter((m) => matchesQuery(m, query)) : []);

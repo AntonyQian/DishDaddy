@@ -94,7 +94,6 @@ body {
 
 @keyframes drift-a { 0%, 100% { transform: translate3d(0, 0, 0) scale(1); } 50% { transform: translate3d(8vw, 6vh, 0) scale(1.15); } }
 @keyframes drift-b { 0%, 100% { transform: translate3d(0, 0, 0) scale(1.1); } 50% { transform: translate3d(-9vw, -5vh, 0) scale(0.95); } }
-@keyframes marquee { to { transform: translate3d(-50%, 0, 0); } }
 @keyframes sheen { from { transform: translateX(-120%) skewX(-20deg); } to { transform: translateX(220%) skewX(-20deg); } }
 
 .sheen::after {
