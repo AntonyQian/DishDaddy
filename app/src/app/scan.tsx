@@ -8,14 +8,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ACCENT, Button, T, Screen } from '@/components/ui';
 import { useScan } from '@/scan/ScanContext';
 
-/** What to photograph next, in order. */
-const SPOTS = ['Shelves', 'Door', 'Drawer', 'Cupboard'];
-const SPOT_HINTS: Record<string, string> = {
-  Shelves: 'Photograph the shelves, front on, with the light on',
-  Door: 'Now the door shelves',
-  Drawer: 'Pull the drawer out and shoot from above',
-  Cupboard: 'Anything in the cupboard you want to cook with',
-};
+/** The server accepts at most this many photos per Scan (MAX_PHOTOS in server/src/app.ts). */
+const MAX_PHOTOS = 8;
 
 function ScanCaptureScreenBody() {
   const [permission, requestPermission] = useCameraPermissions();
@@ -25,8 +19,7 @@ function ScanCaptureScreenBody() {
   const [taking, setTaking] = useState(false);
   const { photos, addPhoto, removePhoto } = useScan();
 
-  // The first spot not yet photographed, so removing a photo brings its prompt back.
-  const spot = SPOTS.find((s) => !photos.some((p) => p.spot === s)) ?? 'Anything else';
+  const full = photos.length >= MAX_PHOTOS;
 
   if (!permission) return <View style={styles.center} />;
   if (!permission.granted) {
@@ -39,11 +32,11 @@ function ScanCaptureScreenBody() {
   }
 
   const takePhoto = async () => {
-    if (!camera.current || taking) return;
+    if (!camera.current || taking || full) return;
     setTaking(true);
     try {
       const pic = await camera.current.takePictureAsync({ quality: 0.7, shutterSound: false });
-      addPhoto({ uri: pic.uri, width: pic.width, height: pic.height, spot });
+      addPhoto({ uri: pic.uri, width: pic.width, height: pic.height });
     } catch (e) {
       Alert.alert('Could not take the photo', e instanceof Error ? e.message : String(e));
     } finally {
@@ -59,8 +52,12 @@ function ScanCaptureScreenBody() {
           <CameraView ref={camera} style={StyleSheet.absoluteFill} facing="back" onCameraReady={() => setReady(true)} />
         )}
         <View style={styles.prompt}>
-          <Text style={styles.promptTitle}>{spot}</Text>
-          <Text style={styles.promptHint}>{SPOT_HINTS[spot] ?? 'Anything the other photos missed'}</Text>
+          <Text style={styles.promptTitle}>
+            {photos.length === 0 ? 'Take photos of your food' : `${photos.length} of ${MAX_PHOTOS} photos`}
+          </Text>
+          <Text style={styles.promptHint}>
+            {full ? 'That is the most for one Scan. Tap Scan.' : 'Take as many as you like, then tap Scan when you are ready'}
+          </Text>
         </View>
         <View style={styles.controls}>
           <View style={styles.controlSide} />
@@ -68,8 +65,8 @@ function ScanCaptureScreenBody() {
             accessibilityRole="button"
             accessibilityLabel="Take photo"
             onPress={takePhoto}
-            disabled={!ready || taking}
-            style={({ pressed }) => [styles.shutter, (pressed || taking || !ready) && { opacity: 0.6 }]}
+            disabled={!ready || taking || full}
+            style={({ pressed }) => [styles.shutter, (pressed || taking || !ready || full) && { opacity: 0.6 }]}
           />
           <View style={[styles.controlSide, { alignItems: 'flex-end' }]}>
             <Pressable
@@ -87,12 +84,12 @@ function ScanCaptureScreenBody() {
       </View>
 
       <ScrollView horizontal contentContainerStyle={styles.thumbs} style={styles.thumbsBar}>
-        {photos.length === 0 && <T dim>Take 2–3 photos: shelves, door, drawer.</T>}
+        {photos.length === 0 && <T dim>Your photos will appear here.</T>}
         {photos.map((p, i) => (
           <View key={p.uri}>
             <Image source={{ uri: p.uri }} style={styles.thumb} contentFit="cover" />
             <Text style={styles.thumbLabel}>
-              {i + 1}. {p.spot}
+              Photo {i + 1}
             </Text>
             <Pressable
               accessibilityRole="button"

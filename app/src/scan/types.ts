@@ -3,6 +3,4 @@ export interface CapturedPhoto {
   uri: string;
   width: number;
   height: number;
-  /** Which prompt it was taken under (shelf, door, drawer…). */
-  spot: string;
 }

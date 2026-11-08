@@ -75,7 +75,7 @@ function ReviewScreenBody() {
         {photos.length > 1 && (
           <View style={styles.chips}>
             {photos.map((p, i) => (
-              <Chip key={p.uri} title={`${i + 1}. ${p.spot}`} selected={i === photoIndex} onPress={() => setPhotoIndex(i)} />
+              <Chip key={p.uri} title={`Photo ${i + 1}`} selected={i === photoIndex} onPress={() => setPhotoIndex(i)} />
             ))}
           </View>
         )}
