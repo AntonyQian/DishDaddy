@@ -9,7 +9,7 @@ import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
 
 import { BookmarkButton } from '@/components/BookmarkButton';
 import { useLenis } from '@/components/SmoothScroll';
-import { CookScene } from '@/components/three/scenes';
+import { Backdrop } from '@/components/cook/Backdrop';
 import { GlowButton } from '@/components/ui/GlowButton';
 import { Magnetic } from '@/components/ui/Magnetic';
 import { getRecipe, searchRecipes } from '@/lib/api';
@@ -81,11 +81,9 @@ function Cooking({ recipe }: { recipe: Recipe }) {
       end: 'bottom bottom',
       scrub: true,
       onUpdate: (self) => {
-        scrollState.cook = self.progress;
         setStep(Math.min(n - 1, Math.floor(self.progress * n)));
       },
     });
-    return () => { scrollState.cook = 0; };
   }, { scope: wrapper, dependencies: [n] });
 
   const goTo = useCallback((i: number) => {
@@ -113,8 +111,7 @@ function Cooking({ recipe }: { recipe: Recipe }) {
   return (
     <div ref={wrapper} style={{ height: `${(n + 1) * 100}svh` }} className="relative">
       <div className="sticky top-0 h-svh overflow-hidden">
-        <CookScene className="absolute inset-0 md:left-[22%]" />
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-ink via-ink/60 to-transparent md:via-ink/40" />
+        <Backdrop />
 
         <div className="relative z-10 flex h-full flex-col px-5 pb-8 pt-28 md:px-10">
           <div className="pointer-events-auto flex flex-wrap items-start justify-between gap-4">
