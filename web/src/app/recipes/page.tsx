@@ -129,7 +129,20 @@ export default function RecipesPage() {
       </section>
 
       <section className="relative mx-auto max-w-[1500px] px-5 pb-32 md:px-10">
-        <div className="glass-dark sticky top-24 z-30 mb-10 flex flex-col gap-4 rounded-[2rem] p-3 md:flex-row md:items-center">
+        {error ? (
+          <Empty title="Can't reach the recipe server" text="Start it with npm run server, then reload." />
+        ) : items && items.length === 0 ? (
+          <Empty title="Your kitchen is empty" text="Add what you have and recipes show up here." action={<GlowButton href="/" arrow>Go to Kitchen</GlowButton>} />
+        ) : matches === null ? (
+          <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">{[0, 1, 2].map((i) => <div key={i} className="glass aspect-[4/5] animate-pulse rounded-[2rem]" />)}</div>
+        ) : shown.length === 0 ? (
+          <Empty title="No recipes match" text="Try a different search or turn a filter off." action={<GlowButton onClick={() => { setActive(new Set()); setQuery(''); }}>Clear filters</GlowButton>} />
+        ) : (
+          <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+            {shown.map((m) => <RecipeCard key={m.recipeId} m={m} />)}
+          </div>
+        )}
+        <div className="glass-dark sticky bottom-5 z-30 !bg-ink/90 mt-10 flex flex-col gap-4 rounded-[2rem] p-3 md:flex-row md:items-center">
           <label className="flex flex-1 items-center gap-3 rounded-full bg-white/5 px-5 py-3">
             <Search className="size-5 text-fg-mute" />
             <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search recipes…" aria-label="Search recipes" className="min-w-0 flex-1 bg-transparent font-medium outline-none placeholder:text-fg-mute" />
@@ -148,20 +161,6 @@ export default function RecipesPage() {
             })}
           </div>
         </div>
-
-        {error ? (
-          <Empty title="Can't reach the recipe server" text="Start it with npm run server, then reload." />
-        ) : items && items.length === 0 ? (
-          <Empty title="Your kitchen is empty" text="Add what you have and recipes show up here." action={<GlowButton href="/" arrow>Go to Kitchen</GlowButton>} />
-        ) : matches === null ? (
-          <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">{[0, 1, 2].map((i) => <div key={i} className="glass aspect-[4/5] animate-pulse rounded-[2rem]" />)}</div>
-        ) : shown.length === 0 ? (
-          <Empty title="No recipes match" text="Try a different search or turn a filter off." action={<GlowButton onClick={() => { setActive(new Set()); setQuery(''); }}>Clear filters</GlowButton>} />
-        ) : (
-          <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-            {shown.map((m) => <RecipeCard key={m.recipeId} m={m} />)}
-          </div>
-        )}
       </section>
     </div>
   );
