@@ -1,14 +1,14 @@
 import type { Recipe } from '@fridge/shared';
 import { useEffect, useState } from 'react';
+import { Alert } from 'react-native';
 
-import { Button, DANGER, T } from '@/components/ui';
+import { RoundButton } from '@/components/ui';
 import { isRecipeSaved, toggleSavedRecipe } from '@/lib/savedRecipes';
 
-/** Saves or unsaves the Recipe on the device. */
+/** The bookmark button in a recipe's header: saves or unsaves the Recipe on the device. */
 export function SaveToggle({ recipe }: { recipe: Recipe }) {
   const [saved, setSaved] = useState<boolean | null>(null);
   const [busy, setBusy] = useState(false);
-  const [problem, setProblem] = useState<string | null>(null);
 
   useEffect(() => {
     let live = true;
@@ -17,27 +17,16 @@ export function SaveToggle({ recipe }: { recipe: Recipe }) {
   }, [recipe.id]);
 
   const toggle = async () => {
+    if (busy || saved === null) return;
     setBusy(true);
-    setProblem(null);
     try {
       setSaved(await toggleSavedRecipe(recipe));
     } catch {
-      setProblem(saved ? 'Could not unsave this Recipe. Try again.' : 'Could not save this Recipe. Try again.');
+      Alert.alert(saved ? 'Could not unsave this Recipe' : 'Could not save this Recipe', 'Try again.');
     } finally {
       setBusy(false);
     }
   };
 
-  return (
-    <>
-      <Button
-        title={saved ? 'Saved ✓ (tap to unsave)' : 'Save Recipe'}
-        variant={saved ? 'secondary' : 'primary'}
-        onPress={toggle}
-        disabled={saved === null}
-        busy={busy}
-      />
-      {!!problem && <T style={{ color: DANGER }}>{problem}</T>}
-    </>
-  );
+  return <RoundButton icon={saved ? 'bookmark' : 'bookmark-border'} label={saved ? 'Unsave recipe' : 'Save recipe'} active={!!saved} onPress={toggle} />;
 }

@@ -6,13 +6,11 @@ import { FlatList, StyleSheet } from 'react-native';
 import { router } from 'expo-router';
 import { EmptyState, Screen } from '@/components/ui';
 import { loadSavedRecipes } from '@/lib/savedRecipes';
-import { useGoals } from '@/lib/useGoals';
 import { RecipeRow } from '@/recipes/RecipeRow';
 import { RecipeListSkeleton } from '@/recipes/Skeleton';
 
 export default function SavedRecipesScreen() {
   const [saved, setSaved] = useState<Recipe[] | null>(null);
-  const goals = useGoals();
 
   // Reload on focus so a Recipe unsaved on its detail screen drops off when the user comes back.
   useFocusEffect(
@@ -38,8 +36,6 @@ export default function SavedRecipesScreen() {
               imageUrl={item.imageUrl}
               calories={item.calories}
               proteinGrams={item.proteinGrams}
-              highProtein={item.highProtein}
-              goalProtein={goals.proteinGrams}
             />
           )}
           contentContainerStyle={styles.list}

@@ -1,9 +1,6 @@
 import {
-  Epilogue_600SemiBold, Epilogue_700Bold,
-} from '@expo-google-fonts/epilogue';
-import {
-  Manrope_400Regular, Manrope_500Medium, Manrope_600SemiBold, Manrope_700Bold, useFonts,
-} from '@expo-google-fonts/manrope';
+  PlusJakartaSans_500Medium, PlusJakartaSans_600SemiBold, PlusJakartaSans_700Bold, PlusJakartaSans_800ExtraBold, useFonts,
+} from '@expo-google-fonts/plus-jakarta-sans';
 import { DefaultTheme, Stack, ThemeProvider } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 
@@ -25,8 +22,7 @@ const THEME = {
 
 export default function RootLayout() {
   const [loaded, error] = useFonts({
-    Epilogue_600SemiBold, Epilogue_700Bold,
-    Manrope_400Regular, Manrope_500Medium, Manrope_600SemiBold, Manrope_700Bold,
+    PlusJakartaSans_500Medium, PlusJakartaSans_600SemiBold, PlusJakartaSans_700Bold, PlusJakartaSans_800ExtraBold,
   });
   // Wait for the fonts, but never get stuck on a font that fails to load.
   if (!loaded && !error) return null;
@@ -37,6 +33,7 @@ export default function RootLayout() {
       <ScanProvider>
         <Stack screenOptions={{ headerShown: false }}>
           <Stack.Screen name="(tabs)" />
+          <Stack.Screen name="scan" />
           <Stack.Screen name="scanning" options={{ gestureEnabled: false }} />
           <Stack.Screen name="review" />
           <Stack.Screen name="recipe/[id]" />
