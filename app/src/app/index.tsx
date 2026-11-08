@@ -44,6 +44,7 @@ function HomeScreenBody() {
           <T style={styles.heading}>Latest Scan</T>
           <T dim>{new Date(latest.confirmedAt).toLocaleString()}</T>
           <T>{latest.ingredients.length ? latest.ingredients.join(', ') : 'No Ingredients confirmed'}</T>
+          <Button title="Find recipes" onPress={() => router.push('/recipes')} style={styles.find} />
         </View>
       )}
 
@@ -62,6 +63,7 @@ const styles = StyleSheet.create({
   section: { marginTop: 16, gap: 4 },
   heading: { fontSize: 18, fontWeight: '700' },
   small: { fontSize: 13 },
+  find: { marginTop: 8 },
 });
 
 export default function HomeScreen() {

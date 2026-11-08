@@ -13,6 +13,8 @@ export default function RootLayout() {
           <Stack.Screen name="scan" />
           <Stack.Screen name="scanning" options={{ gestureEnabled: false }} />
           <Stack.Screen name="review" />
+          <Stack.Screen name="recipes" />
+          <Stack.Screen name="recipe/[id]" />
         </Stack>
       </ScanProvider>
     </ThemeProvider>
