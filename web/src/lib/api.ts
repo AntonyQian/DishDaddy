@@ -1,4 +1,4 @@
-import type { Recipe, RecipeMatch } from '@fridge/shared';
+import type { Recipe, RecipeMatch, Substitution, SubstitutionRequest, SubstitutionsResponse } from '@fridge/shared';
 
 // The site forwards /api/* to the recipe server (see next.config.ts).
 const API = '/api';
@@ -24,4 +24,14 @@ export async function getRecipe(id: string): Promise<Recipe> {
 export async function getIngredients(): Promise<string[]> {
   const body = await json<{ ingredients: string[] }>(await fetch(`${API}/ingredients`));
   return body.ingredients;
+}
+
+/** Proposed swaps for a Recipe's Missing Ingredients, from what the user has. */
+export async function getSubstitutions(id: string, have: SubstitutionRequest): Promise<Substitution[]> {
+  const res = await fetch(`${API}/recipes/${encodeURIComponent(id)}/substitutions`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify(have),
+  });
+  return (await json<SubstitutionsResponse>(res)).substitutions;
 }

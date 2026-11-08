@@ -59,7 +59,7 @@ function RecipeCard({ m }: { m: RecipeMatch }) {
                 <motion.div className="h-full rounded-full bg-gradient-to-r from-brand to-brand-soft" initial={{ width: 0 }} whileInView={{ width: `${(have / total) * 100}%` }} viewport={{ once: true }} transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1], delay: 0.2 }} />
               </div>
             </div>
-            <GlowButton arrow variant={ready ? 'primary' : 'glass'} href={`/cook?id=${m.recipeId}`} className="w-full">Cook now</GlowButton>
+            <GlowButton arrow variant={ready ? 'primary' : 'glass'} href={`/recipes/view?id=${m.recipeId}`} className="w-full">View recipe</GlowButton>
           </div>
         </div>
       </SpotlightCard>

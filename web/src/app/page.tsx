@@ -208,7 +208,7 @@ function ChefPick({ pick }: { pick: RecipeMatch | undefined }) {
               Ready in {pick.minutes} min with what you already have.
               {pick.calories !== undefined && <> About {pick.calories} kcal and {pick.proteinGrams} g protein per serving.</>}
             </p>
-            <div className="mt-9"><Magnetic><GlowButton size="lg" arrow href={`/cook?id=${pick.recipeId}`}>Cook now</GlowButton></Magnetic></div>
+            <div className="mt-9"><Magnetic><GlowButton size="lg" arrow href={`/recipes/view?id=${pick.recipeId}`}>View recipe</GlowButton></Magnetic></div>
           </div>
         </div>
       </SpotlightCard>

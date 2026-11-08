@@ -50,7 +50,7 @@ export function SavedRecipes() {
                       <span className="flex items-center gap-1.5"><Clock className="size-4" /> {r.minutes} min</span>
                       {r.calories !== undefined && <span className="flex items-center gap-1.5"><Flame className="size-4 text-brand-soft" /> {r.calories} kcal</span>}
                     </div>
-                    <GlowButton arrow href={`/cook?id=${r.id}`} className="mt-auto w-full">Cook now</GlowButton>
+                    <GlowButton arrow href={`/recipes/view?id=${r.id}`} className="mt-auto w-full">View recipe</GlowButton>
                   </div>
                 </SpotlightCard>
               </motion.div>
