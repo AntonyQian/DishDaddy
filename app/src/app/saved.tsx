@@ -1,9 +1,8 @@
 import type { Recipe } from '@fridge/shared';
-import { useFocusEffect } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { FlatList, StyleSheet } from 'react-native';
 
-import { router } from 'expo-router';
 import { EmptyState, Screen } from '@/components/ui';
 import { loadSavedRecipes } from '@/lib/savedRecipes';
 import { RecipeRow } from '@/recipes/RecipeRow';

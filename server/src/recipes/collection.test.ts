@@ -12,7 +12,7 @@ describe('real collection (data/recipes.json)', () => {
   });
 
   it('only uses known Equipment', () => {
-    const known = new Set(['oven', 'hob', 'microwave', 'air fryer', 'blender', 'food processor', 'slow cooker', 'pressure cooker', 'grill', 'stand mixer', 'hand mixer', 'rice cooker', 'toaster']);
+    const known = new Set(['oven', 'hob', 'microwave', 'air fryer', 'blender', 'mixer', 'meat grinder', 'slow cooker', 'pressure cooker', 'grill', 'rice cooker', 'toaster']);
     expect(recipes.flatMap((r) => r.equipment).filter((e) => !known.has(e))).toEqual([]);
   });
 });

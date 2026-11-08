@@ -1,17 +1,19 @@
 import type { Recipe, SubstitutionRequest } from '@fridge/shared';
 import { Image } from 'expo-image';
 import { router, useLocalSearchParams } from 'expo-router';
-import { useState, type ReactNode } from 'react';
-import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
+import { useEffect, useState, type ReactNode } from 'react';
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Badge, Button, Icon, Screen, T } from '@/components/ui';
 import { getSubstitutions } from '@/lib/api';
-import { loadStaples } from '@/lib/kitchen';
+import { equipmentLabel, loadStaples } from '@/lib/kitchen';
+import { loadServings, saveServings, stepServings } from '@/lib/servings';
 import { loadLatestScan } from '@/lib/latestScan';
 import { loadRecipe } from '@/recipes/loadRecipe';
 import { NutritionLine } from '@/recipes/NutritionStrip';
 import { difficultyOf } from '@/recipes/recipeFacts';
+import { scaleAmount, scaleStep, spaceFractions } from '@/recipes/scale';
 import { missingIngredients, norm } from '@/recipes/recipeMatch';
 import { SaveToggle } from '@/recipes/SaveToggle';
 import { Failed, Loading } from '@/recipes/StateViews';
@@ -61,6 +63,17 @@ function SwapRow({ swap, onAccept, onReject }: { swap: Swap; onAccept: () => voi
 function RecipeDetail({ recipe, have, missing }: { recipe: Recipe; have: SubstitutionRequest; missing: ReadonlySet<string> }) {
   const [swaps, setSwaps] = useState<SwapState>(() => startSwaps(missing));
   const [suggest, setSuggest] = useState<SuggestState>({ status: 'idle' });
+  // How many servings to cook. Most meals are for one person, so it starts at 1 and remembers the last choice.
+  const [servings, setServings] = useState(1);
+  useEffect(() => {
+    loadServings().then(setServings);
+  }, []);
+  const factor = servings / Math.max(1, recipe.servings);
+  const changeServings = (direction: 1 | -1) => {
+    const next = stepServings(servings, direction);
+    setServings(next);
+    saveServings(next).catch(() => {});
+  };
 
   async function suggestSubstitutions() {
     setSuggest({ status: 'loading' });
@@ -87,7 +100,7 @@ function RecipeDetail({ recipe, have, missing }: { recipe: Recipe; have: Substit
     if ([...missing].some((m) => norm(m) === item)) swapRows.add(n);
   });
 
-  const tags = [recipe.cuisine !== 'Other' ? recipe.cuisine : null, ...recipe.equipment.map(capital)].filter(Boolean) as string[];
+  const tags = [recipe.cuisine !== 'Other' ? recipe.cuisine : null, ...recipe.equipment.map(equipmentLabel)].filter(Boolean) as string[];
 
   return (
     <View style={styles.fill}>
@@ -105,7 +118,7 @@ function RecipeDetail({ recipe, have, missing }: { recipe: Recipe; have: Substit
             </View>
           )}
           <T style={styles.title}>{recipe.name}</T>
-          <NutritionLine calories={recipe.calories} proteinGrams={recipe.proteinGrams} />
+          <NutritionLine calories={recipe.calories} proteinGrams={recipe.proteinGrams} servings={servings} />
           <View style={styles.stats}>
             <View style={styles.stat}>
               <T dim style={styles.statLabel}>Prep & Cook</T>
@@ -118,10 +131,23 @@ function RecipeDetail({ recipe, have, missing }: { recipe: Recipe; have: Substit
             </View>
             <View style={styles.statDivider} />
             <View style={styles.stat}>
-              <T dim style={styles.statLabel}>Serves</T>
-              <T style={styles.statValue}>{recipe.servings}</T>
+              <T dim style={styles.statLabel}>Servings</T>
+              <View style={styles.stepper}>
+                <Pressable accessibilityRole="button" accessibilityLabel="Fewer servings" onPress={() => changeServings(-1)} hitSlop={8} style={styles.stepButton}>
+                  <Icon name="remove" size={18} color={COLORS.primary} />
+                </Pressable>
+                <T style={styles.stepValue}>{servings}</T>
+                <Pressable accessibilityRole="button" accessibilityLabel="More servings" onPress={() => changeServings(1)} hitSlop={8} style={styles.stepButton}>
+                  <Icon name="add" size={18} color={COLORS.primary} />
+                </Pressable>
+              </View>
             </View>
           </View>
+          {servings !== recipe.servings && (
+            <T dim style={styles.scaleNote}>
+              Amounts scaled from {recipe.servings} to {servings} {servings === 1 ? 'serving' : 'servings'}. Cooking times and pan sizes stay the same.
+            </T>
+          )}
         </View>
 
         <View style={{ gap: 8 }}>
@@ -143,7 +169,7 @@ function RecipeDetail({ recipe, have, missing }: { recipe: Recipe; have: Substit
                     <T style={styles.ingredientName}>{capital(i.ingredient)}</T>
                     {!!note && <T style={[styles.ingredientNote, isMissing && { color: COLORS.warnText }]}>{note}</T>}
                   </View>
-                  {!!i.quantity && <T dim style={styles.quantity}>{i.quantity}</T>}
+                  {!!i.quantity && <T dim style={styles.quantity}>{spaceFractions(scaleAmount(i.quantity, factor))}</T>}
                 </View>
                 {shown.map((s) => (
                   <SwapRow
@@ -183,7 +209,7 @@ function RecipeDetail({ recipe, have, missing }: { recipe: Recipe; have: Substit
                 </View>
                 <T style={styles.stepTitle}>Step {n + 1}</T>
               </View>
-              <T dim style={styles.stepText}>{s}</T>
+              <T dim style={styles.stepText}>{spaceFractions(scaleStep(s, factor))}</T>
             </View>
           ))}
         </View>
@@ -194,7 +220,7 @@ function RecipeDetail({ recipe, have, missing }: { recipe: Recipe; have: Substit
           <Button
             title="Start Cooking"
             icon="arrow-forward"
-            onPress={() => router.navigate({ pathname: '/cook', params: { id: recipe.id } })}
+            onPress={() => router.navigate({ pathname: '/cook', params: { id: recipe.id, servings: String(servings) } })}
             style={styles.cookButton}
           />
         </View>
@@ -232,6 +258,10 @@ const styles = StyleSheet.create({
   stat: { alignItems: 'center', paddingVertical: 4, flex: 1 },
   statLabel: { fontSize: 11, fontWeight: '700' },
   statValue: { fontSize: 15, fontWeight: '700', marginTop: 2 },
+  stepper: { flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 4 },
+  stepButton: { width: 28, height: 28, borderRadius: 14, backgroundColor: COLORS.primarySoft, alignItems: 'center', justifyContent: 'center' },
+  stepValue: { fontSize: 16, fontWeight: '800', minWidth: 20, textAlign: 'center' },
+  scaleNote: { fontSize: 11, textAlign: 'center', paddingTop: 4 },
   statDivider: { width: 1, height: 32, backgroundColor: COLORS.border },
   sectionHead: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 },
   sectionTitle: { fontSize: 18, fontWeight: '700' },
